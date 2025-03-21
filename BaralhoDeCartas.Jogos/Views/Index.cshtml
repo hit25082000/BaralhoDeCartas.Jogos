@@ -1,0 +1,84 @@
+﻿@{
+    ViewData["Title"] = "Início";
+}
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6 animate__animated animate__fadeInLeft">
+            <h1 class="display-4 fw-bold mb-4">Bem-vindo aos Jogos de Baralho</h1>
+            <p class="lead mb-4">Divirta-se com nossos jogos clássicos de cartas. Jogue sozinho ou com amigos em uma experiência única e envolvente.</p>
+            <a href="/Jogos" class="btn btn-primary btn-lg">
+                <i class="bi bi-play-circle me-2"></i>Começar a Jogar
+            </a>
+        </div>
+        <div class="col-lg-6 text-center animate__animated animate__fadeInRight">
+            <img src="~/images/hero-cards.png" alt="Cartas de Baralho" class="img-fluid" style="max-height: 400px;">
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row py-5">
+        <div class="col-12 text-center mb-5">
+            <h2 class="fw-bold">Por que escolher nossos jogos?</h2>
+            <p class="lead text-muted">Descubra o que torna nossa plataforma especial</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                <div class="card-body text-center">
+                    <i class="bi bi-controller display-4 text-primary mb-3"></i>
+                    <h3 class="card-title h5">Jogos Clássicos</h3>
+                    <p class="card-text">Blackjack, Maior Carta e muito mais. Todos os seus jogos favoritos em um só lugar.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                <div class="card-body text-center">
+                    <i class="bi bi-people display-4 text-primary mb-3"></i>
+                    <h3 class="card-title h5">Multiplayer</h3>
+                    <p class="card-text">Jogue com amigos em tempo real. Uma experiência social única.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+                <div class="card-body text-center">
+                    <i class="bi bi-phone display-4 text-primary mb-3"></i>
+                    <h3 class="card-title h5">Interface Intuitiva</h3>
+                    <p class="card-text">Design moderno e responsivo para uma experiência perfeita em qualquer dispositivo.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row py-5">
+        <div class="col-12 text-center">
+            <div class="card bg-primary text-white animate__animated animate__fadeIn">
+                <div class="card-body py-5">
+                    <h2 class="card-title h3 mb-4">Pronto para começar?</h2>
+                    <p class="card-text lead mb-4">Junte-se a milhares de jogadores e comece sua jornada agora mesmo!</p>
+                    <a href="/Jogos" class="btn btn-light btn-lg">
+                        <i class="bi bi-play-circle me-2"></i>Explorar Jogos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.2}s`;
+                card.classList.add('animate__animated', 'animate__fadeInUp');
+            });
+        });
+    </script>
+}

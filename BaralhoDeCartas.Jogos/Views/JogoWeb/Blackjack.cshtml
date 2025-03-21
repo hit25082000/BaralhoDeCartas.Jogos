@@ -1,0 +1,477 @@
+@model BaralhoDeCartas.Models.Interfaces.IJogoBlackJack
+@{
+    ViewData["Title"] = "Blackjack";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10 text-center">
+            <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Blackjack</h1>
+            <p class="lead text-muted animate__animated animate__fadeInUp">Chegue o mais próximo de 21 sem ultrapassar!</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6 text-center mb-4 mb-md-0">
+                            <h3 class="mb-3">Dealer</h3>
+                            <div id="dealer-cards" class="cards-container d-flex justify-content-center flex-wrap"></div>
+                            <div class="score-display mt-3">
+                                <span>Pontos: </span>
+                                <span id="dealer-score">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <h3 class="mb-3">Você</h3>
+                            <div id="player-cards" class="cards-container d-flex justify-content-center flex-wrap"></div>
+                            <div class="score-display mt-3">
+                                <span>Pontos: </span>
+                                <span id="player-score">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center mb-4">
+                        <div id="game-message" class="alert alert-info text-center w-100">
+                            Clique em "Iniciar" para começar um novo jogo!
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <div id="control-buttons">
+                            <button id="start-btn" class="btn btn-primary btn-lg me-2" onclick="iniciarRodada()">
+                                <i class="bi bi-play-circle me-2"></i>Iniciar
+                            </button>
+                            <button id="hit-btn" class="btn btn-success btn-lg me-2" disabled onclick="comprarCarta(@Model.JogadorAtual.JogadorId)">
+                                <i class="bi bi-plus-circle me-2"></i>Pedir Carta
+                            </button>
+                            <button id="stand-btn" class="btn btn-warning btn-lg" disabled onclick="parar(@Model.JogadorAtual.JogadorId)>
+                                <i class="bi bi-hand-thumbs-up me-2"></i>Parar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button id="new-game-btn" class="btn btn-outline-secondary btn-lg" disabled>
+                            <i class="bi bi-arrow-repeat me-2"></i>Novo Jogo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">Regras do Blackjack</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">O objetivo é ter uma mão com valor mais próximo de 21 sem ultrapassar</li>
+                        <li class="list-group-item">Cartas numéricas (2-10) valem seu valor nominal</li>
+                        <li class="list-group-item">Figuras (J, Q, K) valem 10 pontos</li>
+                        <li class="list-group-item">Áses podem valer 1 ou 11 pontos (o que for melhor para a mão)</li>
+                        <li class="list-group-item">Você começa com 2 cartas e pode pedir mais ("hit") ou parar ("stand")</li>
+                        <li class="list-group-item">Se ultrapassar 21, você perde automaticamente ("bust")</li>
+                        <li class="list-group-item">O dealer deve pedir cartas até ter pelo menos 17 pontos</li>
+                        <li class="list-group-item">Blackjack natural (21 com as primeiras 2 cartas) vence automaticamente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function iniciarRodada() {
+            try {
+                const response = await fetch(`/JogoWeb/IniciarRodada?baralhoId=@Model.Baralho.BaralhoId&numeroJogadores=2`);
+                const jogadores = await response.json();
+
+                const areaJogadores = document.getElementById('area-jogadores');
+                areaJogadores.innerHTML = '';
+
+                jogadores.forEach(jogador => {
+                    const jogadorElement = document.createElement('div');
+                    jogadorElement.className = 'jogador-card';
+                    jogadorElement.innerHTML = `
+                        <h3>${jogador.nome}</h3>
+                        <div class="cartas-jogador">
+                            ${jogador.cartas.map(carta => `
+                                <div class="carta">
+                                    <div class="carta-valor">${carta.valor}</div>
+                                    <div class="carta-naipe">${carta.naipe}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="acoes-jogador">
+                            <button class="btn btn-success" onclick="comprarCarta('${jogador.jogadorId}')">
+                                Comprar Carta
+                            </button>
+                            <button class="btn btn-danger" onclick="parar('${jogador.jogadorId}')">
+                                Parar
+                            </button>
+                        </div>
+                    `;
+                    areaJogadores.appendChild(jogadorElement);
+                });
+            } catch (error) {
+                console.error('Erro ao iniciar rodada:', error);
+            }
+        }
+
+        async function comprarCarta(jogadorId) {
+            try {
+                const response = await fetch(`/JogoWeb/ComprarCarta?baralhoId=@Model.Baralho.BaralhoId&jogadorId=${jogadorId}`);
+                const carta = await response.json();
+
+                // Atualizar a interface com a nova carta
+                const jogadorElement = document.querySelector(`[data-jogador-id="${jogadorId}"]`);
+                const cartasJogador = jogadorElement.querySelector('.cartas-jogador');
+
+                const cartaElement = document.createElement('div');
+                cartaElement.className = 'carta';
+                cartaElement.innerHTML = `
+                    <div class="carta-valor">${carta.valor}</div>
+                    <div class="carta-naipe">${carta.naipe}</div>
+                `;
+
+                cartasJogador.appendChild(cartaElement);
+            } catch (error) {
+                console.error('Erro ao comprar carta:', error);
+            }
+        }
+
+        async function parar(jogadorId) {
+            console.log(`Jogador ${jogadorId} parou`);
+        }
+    </script>
+}
+
+@* @section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos do DOM
+        const dealerCards = document.getElementById('dealer-cards');
+        const playerCards = document.getElementById('player-cards');
+        const dealerScore = document.getElementById('dealer-score');
+        const playerScore = document.getElementById('player-score');
+        const gameMessage = document.getElementById('game-message');
+        const startBtn = document.getElementById('start-btn');
+        const hitBtn = document.getElementById('hit-btn');
+        const standBtn = document.getElementById('stand-btn');
+        const newGameBtn = document.getElementById('new-game-btn');
+
+        // Variáveis do jogo
+        let deck = [];
+        let dealerHand = [];
+        let playerHand = [];
+        let gameOver = true;
+        let dealerRevealedFirstCard = false;
+
+        // Valores e naipes das cartas
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const suits = ['♣', '♦', '♥', '♠'];
+        const suitColors = {
+            '♣': 'black',
+            '♦': 'red',
+            '♥': 'red',
+            '♠': 'black'
+        };
+
+        // Função para criar um baralho completo
+        function createDeck() {
+            const newDeck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    newDeck.push({ value, suit });
+                }
+            }
+            return newDeck;
+        }
+
+        // Função para embaralhar o baralho
+        function shuffleDeck(deck) {
+            const shuffled = [...deck];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Função para pegar uma carta do baralho
+        function drawCard() {
+            return deck.pop();
+        }
+
+        // Função para calcular o valor de uma mão
+        function calculateHandValue(hand) {
+            let value = 0;
+            let aces = 0;
+
+            for (let card of hand) {
+                if (card.value === 'A') {
+                    aces++;
+                    value += 11;
+                } else if (['J', 'Q', 'K'].includes(card.value)) {
+                    value += 10;
+                } else {
+                    value += parseInt(card.value);
+                }
+            }
+
+            // Ajustar valor dos ases se necessário
+            while (value > 21 && aces > 0) {
+                value -= 10; // Muda um ás de 11 para 1
+                aces--;
+            }
+
+            return value;
+        }
+
+        // Função para criar um elemento de carta no DOM
+        function createCardElement(cardData, faceUp = true) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'playing-card';
+
+            cardElement.innerHTML = `
+                <div class="playing-card-inner">
+                    <div class="playing-card-back">
+                        <div class="card-pattern"></div>
+                    </div>
+                    <div class="playing-card-front">
+                        <div class="card-content">
+                            <div class="card-corner top-left">
+                                <span class="card-value">${cardData.value}</span>
+                                <span class="card-suit">${cardData.suit}</span>
+                            </div>
+                            <div class="card-center">
+                                <span class="card-big-symbol">${cardData.suit}</span>
+                            </div>
+                            <div class="card-corner bottom-right">
+                                <span class="card-value">${cardData.value}</span>
+                                <span class="card-suit">${cardData.suit}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Define a classe de cor
+            const colorClass = suitColors[cardData.suit] === 'red' ? 'card-red' : 'card-black';
+            const frontSide = cardElement.querySelector('.playing-card-front');
+            frontSide.classList.add(colorClass);
+
+            if (faceUp) {
+                cardElement.classList.add('flipped');
+            }
+
+            return cardElement;
+        }
+
+        // Função para atualizar a exibição das mãos
+        function updateDisplay() {
+            // Limpa áreas de cartas
+            dealerCards.innerHTML = '';
+            playerCards.innerHTML = '';
+
+            // Adiciona cartas do dealer
+            dealerHand.forEach((card, index) => {
+                // A primeira carta do dealer fica virada para baixo até o fim do jogo
+                const faceUp = index === 0 ? dealerRevealedFirstCard : true;
+                dealerCards.appendChild(createCardElement(card, faceUp));
+            });
+
+            // Adiciona cartas do jogador
+            playerHand.forEach(card => {
+                playerCards.appendChild(createCardElement(card));
+            });
+
+            // Atualiza pontuação
+            const dealerValue = calculateHandValue(dealerHand);
+            const playerValue = calculateHandValue(playerHand);
+
+            dealerScore.textContent = dealerRevealedFirstCard ? dealerValue : '?';
+            playerScore.textContent = playerValue;
+        }
+
+        // Função para iniciar um novo jogo
+        function startGame() {
+            // Reseta variáveis
+            deck = shuffleDeck(createDeck());
+            dealerHand = [];
+            playerHand = [];
+            gameOver = false;
+            dealerRevealedFirstCard = false;
+
+            // Atualiza UI
+            gameMessage.textContent = 'Jogo iniciado! Sua vez.';
+            gameMessage.className = 'alert alert-info text-center w-100';
+
+            // Distribui cartas iniciais
+            dealerHand.push(drawCard(), drawCard());
+            playerHand.push(drawCard(), drawCard());
+
+            // Verifica Blackjack natural
+            const playerValue = calculateHandValue(playerHand);
+            if (playerValue === 21) {
+                dealerRevealedFirstCard = true;
+                const dealerValue = calculateHandValue(dealerHand);
+
+                if (dealerValue === 21) {
+                    endGame('tie');
+                } else {
+                    endGame('player');
+                }
+            }
+
+            // Atualiza botões
+            startBtn.disabled = true;
+            hitBtn.disabled = false;
+            standBtn.disabled = false;
+            newGameBtn.disabled = false;
+
+            updateDisplay();
+        }
+
+        // Função para o jogador pedir uma carta
+        function hit() {
+            if (gameOver) return;
+
+            playerHand.push(drawCard());
+            const playerValue = calculateHandValue(playerHand);
+
+            updateDisplay();
+
+            // Verifica se o jogador estourou
+            if (playerValue > 21) {
+                endGame('dealer');
+            }
+        }
+
+        // Função para o jogador parar
+        function stand() {
+            if (gameOver) return;
+
+            dealerRevealedFirstCard = true;
+            updateDisplay();
+
+            // Dealer joga
+            dealerPlay();
+        }
+
+        // Função para o dealer jogar
+        function dealerPlay() {
+            const dealerTurn = () => {
+                const dealerValue = calculateHandValue(dealerHand);
+
+                if (dealerValue < 17) {
+                    dealerHand.push(drawCard());
+                    updateDisplay();
+
+                    // Adiciona um delay para melhorar a experiência
+                    setTimeout(dealerTurn, 800);
+                } else {
+                    const playerValue = calculateHandValue(playerHand);
+
+                    // Determina o vencedor
+                    if (dealerValue > 21) {
+                        endGame('player');
+                    } else if (dealerValue > playerValue) {
+                        endGame('dealer');
+                    } else if (dealerValue < playerValue) {
+                        endGame('player');
+                    } else {
+                        endGame('tie');
+                    }
+                }
+            };
+
+            setTimeout(dealerTurn, 800);
+        }
+
+        // Função para encerrar o jogo
+        function endGame(winner) {
+            gameOver = true;
+            dealerRevealedFirstCard = true;
+
+            hitBtn.disabled = true;
+            standBtn.disabled = true;
+
+            updateDisplay();
+
+            const playerValue = calculateHandValue(playerHand);
+            const dealerValue = calculateHandValue(dealerHand);
+
+            let resultMessage = '';
+
+            if (winner === 'player') {
+                if (playerValue === 21 && playerHand.length === 2) {
+                    resultMessage = 'Blackjack! Você venceu!';
+                } else {
+                    resultMessage = 'Você venceu!';
+                }
+                gameMessage.className = 'alert alert-success text-center w-100';
+
+                const playerCardsElements = playerCards.querySelectorAll('.playing-card');
+                playerCardsElements.forEach(card => {
+                    card.querySelector('.card-content').classList.add('card-highlight');
+                });
+
+            } else if (winner === 'dealer') {
+                if (playerValue > 21) {
+                    resultMessage = 'Você estourou! Dealer vence.';
+                    playerCards.classList.add('bust');
+                } else if (dealerValue === 21 && dealerHand.length === 2) {
+                    resultMessage = 'Dealer tem Blackjack! Você perdeu.';
+                } else {
+                    resultMessage = 'Dealer vence.';
+                }
+                gameMessage.className = 'alert alert-danger text-center w-100';
+
+                const dealerCardsElements = dealerCards.querySelectorAll('.playing-card');
+                dealerCardsElements.forEach(card => {
+                    card.querySelector('.card-content').classList.add('card-highlight');
+                });
+
+            } else {
+                resultMessage = 'Empate!';
+                gameMessage.className = 'alert alert-warning text-center w-100';
+            }
+
+            gameMessage.textContent = resultMessage;
+        }
+
+        // Função para preparar um novo jogo
+        function prepareNewGame() {
+            dealerCards.innerHTML = '';
+            playerCards.innerHTML = '';
+
+            dealerScore.textContent = '0';
+            playerScore.textContent = '0';
+
+            gameMessage.textContent = 'Clique em "Iniciar" para começar um novo jogo!';
+            gameMessage.className = 'alert alert-info text-center w-100';
+
+            startBtn.disabled = false;
+            hitBtn.disabled = true;
+            standBtn.disabled = true;
+            newGameBtn.disabled = true;
+
+            gameOver = true;
+        }
+
+        // Event listeners para os botões
+        startBtn.addEventListener('click', startGame);
+        hitBtn.addEventListener('click', hit);
+        standBtn.addEventListener('click', stand);
+        newGameBtn.addEventListener('click', prepareNewGame);
+    });
+</script>
+}  *@

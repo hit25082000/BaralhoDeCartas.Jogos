@@ -1,0 +1,271 @@
+@model BaralhoDeCartas.Models.Interfaces.IJogoBlackJack
+@{
+    ViewData["Title"] = "Blackjack";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10 text-center">
+            <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Blackjack</h1>
+            <p class="lead text-muted animate__animated animate__fadeInUp">Chegue o mais próximo de 21 sem ultrapassar!</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6 text-center mb-4 mb-md-0">
+                            <h3 class="mb-3">Dealer</h3>
+                            <div id="dealer-cards" class="cards-container d-flex justify-content-center flex-wrap"></div>
+                            <div class="score-display mt-3">
+                                <span>Pontos: </span>
+                                <span id="dealer-score">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <h3 class="mb-3">Você</h3>
+                            <div id="player-cards" class="cards-container d-flex justify-content-center flex-wrap"></div>
+                            <div class="score-display mt-3">
+                                <span>Pontos: </span>
+                                <span id="player-score">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center mb-4">
+                        <div id="game-message" class="alert alert-info text-center w-100">
+                            Clique em "Iniciar" para começar um novo jogo!
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <div id="control-buttons">
+                            <button id="start-btn" class="btn btn-primary btn-lg me-2" onclick="iniciarRodada()">
+                                <i class="bi bi-play-circle me-2"></i>Iniciar
+                            </button>
+                            <button id="hit-btn" class="btn btn-success btn-lg me-2" disabled onclick="comprarCarta('@Model.JogadorAtual?.JogadorId')">
+                                <i class="bi bi-plus-circle me-2"></i>Pedir Carta
+                            </button>
+                            <button id="stand-btn" class="btn btn-warning btn-lg" disabled onclick="parar('@Model.JogadorAtual?.JogadorId')">
+                                <i class="bi bi-hand-thumbs-up me-2"></i>Parar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button id="new-game-btn" class="btn btn-outline-secondary btn-lg" disabled onclick="prepareNewGame()">
+                            <i class="bi bi-arrow-repeat me-2"></i>Novo Jogo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">Regras do Blackjack</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">O objetivo é ter uma mão com valor mais próximo de 21 sem ultrapassar</li>
+                        <li class="list-group-item">Cartas numéricas (2-10) valem seu valor nominal</li>
+                        <li class="list-group-item">Figuras (J, Q, K) valem 10 pontos</li>
+                        <li class="list-group-item">Áses podem valer 1 ou 11 pontos (o que for melhor para a mão)</li>
+                        <li class="list-group-item">Você começa com 2 cartas e pode pedir mais ("hit") ou parar ("stand")</li>
+                        <li class="list-group-item">Se ultrapassar 21, você perde automaticamente ("bust")</li>
+                        <li class="list-group-item">O dealer deve pedir cartas até ter pelo menos 17 pontos</li>
+                        <li class="list-group-item">Blackjack natural (21 com as primeiras 2 cartas) vence automaticamente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function iniciarRodada() {
+            try {
+                const response = await fetch(`/api/Blackjack/iniciar-rodada/@Model.Baralho.BaralhoId/2`);
+                if (!response.ok) {
+                    throw new Error('Erro ao iniciar rodada');
+                }
+                const jogadores = await response.json();
+
+                // Habilita os botões de jogo
+                document.getElementById('hit-btn').disabled = false;
+                document.getElementById('stand-btn').disabled = false;
+                document.getElementById('start-btn').disabled = true;
+
+                // Atualiza a mensagem
+                document.getElementById('game-message').textContent = 'Sua vez de jogar!';
+
+                // Atualiza o display das cartas
+                atualizarDisplay(jogadores);
+            } catch (error) {
+                console.error('Erro ao iniciar rodada:', error);
+                document.getElementById('game-message').textContent = 'Erro ao iniciar o jogo. Tente novamente.';
+                document.getElementById('game-message').className = 'alert alert-danger text-center w-100';
+            }
+        }
+
+        async function comprarCarta(jogadorId) {
+            if (!jogadorId) return;
+            
+            try {
+                const response = await fetch(`/api/Blackjack/@Model.Baralho.BaralhoId/comprar-carta/${jogadorId}`);
+                if (!response.ok) {
+                    throw new Error('Erro ao comprar carta');
+                }
+                const jogador = await response.json();
+
+                // Atualiza o display das cartas do jogador
+                atualizarCartasJogador(jogador);
+
+                // Verifica se estourou
+                if (calcularPontos(jogador.cartas) > 21) {
+                    await finalizarJogo('dealer');
+                }
+            } catch (error) {
+                console.error('Erro ao comprar carta:', error);
+                document.getElementById('game-message').textContent = 'Erro ao comprar carta. Tente novamente.';
+                document.getElementById('game-message').className = 'alert alert-danger text-center w-100';
+            }
+        }
+
+        async function parar(jogadorId) {
+            if (!jogadorId) return;
+
+            try {
+                document.getElementById('hit-btn').disabled = true;
+                document.getElementById('stand-btn').disabled = true;
+
+                // Aqui você chamaria a API para o dealer jogar
+                const response = await fetch(`/api/Blackjack/@Model.Baralho.BaralhoId/dealer-jogar`);
+                if (!response.ok) {
+                    throw new Error('Erro na jogada do dealer');
+                }
+                const resultado = await response.json();
+
+                await finalizarJogo(resultado.vencedor);
+            } catch (error) {
+                console.error('Erro ao parar:', error);
+                document.getElementById('game-message').textContent = 'Erro ao finalizar o jogo. Tente novamente.';
+                document.getElementById('game-message').className = 'alert alert-danger text-center w-100';
+            }
+        }
+
+        function atualizarDisplay(jogadores) {
+            const dealerCards = document.getElementById('dealer-cards');
+            const playerCards = document.getElementById('player-cards');
+            
+            dealerCards.innerHTML = '';
+            playerCards.innerHTML = '';
+
+            // Atualiza cartas do dealer
+            const dealer = jogadores.find(j => j.nome === 'Dealer');
+            if (dealer) {
+                dealer.cartas.forEach(carta => {
+                    dealerCards.appendChild(criarElementoCarta(carta));
+                });
+                document.getElementById('dealer-score').textContent = calcularPontos(dealer.cartas);
+            }
+
+            // Atualiza cartas do jogador
+            const player = jogadores.find(j => j.nome !== 'Dealer');
+            if (player) {
+                player.cartas.forEach(carta => {
+                    playerCards.appendChild(criarElementoCarta(carta));
+                });
+                document.getElementById('player-score').textContent = calcularPontos(player.cartas);
+            }
+        }
+
+        function criarElementoCarta(carta) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'playing-card';
+            cardDiv.innerHTML = `
+                <div class="playing-card-inner">
+                    <div class="card-content">
+                        <div class="card-corner top-left">
+                            <span class="card-value">${carta.valor}</span>
+                            <span class="card-suit">${carta.naipe}</span>
+                        </div>
+                        <div class="card-center">
+                            <span class="card-big-symbol">${carta.naipe}</span>
+                        </div>
+                        <div class="card-corner bottom-right">
+                            <span class="card-value">${carta.valor}</span>
+                            <span class="card-suit">${carta.naipe}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return cardDiv;
+        }
+
+        function calcularPontos(cartas) {
+            let pontos = 0;
+            let ases = 0;
+
+            cartas.forEach(carta => {
+                if (carta.valor === 'A') {
+                    ases++;
+                    pontos += 11;
+                } else if (['J', 'Q', 'K'].includes(carta.valor)) {
+                    pontos += 10;
+                } else {
+                    pontos += parseInt(carta.valor);
+                }
+            });
+
+            while (pontos > 21 && ases > 0) {
+                pontos -= 10;
+                ases--;
+            }
+
+            return pontos;
+        }
+
+        async function finalizarJogo(vencedor) {
+            const gameMessage = document.getElementById('game-message');
+            
+            if (vencedor === 'player') {
+                gameMessage.textContent = 'Você venceu!';
+                gameMessage.className = 'alert alert-success text-center w-100';
+            } else if (vencedor === 'dealer') {
+                gameMessage.textContent = 'Dealer venceu!';
+                gameMessage.className = 'alert alert-danger text-center w-100';
+            } else {
+                gameMessage.textContent = 'Empate!';
+                gameMessage.className = 'alert alert-warning text-center w-100';
+            }
+
+            document.getElementById('new-game-btn').disabled = false;
+        }
+
+        function prepareNewGame() {
+            // Reseta o estado do jogo
+            document.getElementById('dealer-cards').innerHTML = '';
+            document.getElementById('player-cards').innerHTML = '';
+            document.getElementById('dealer-score').textContent = '0';
+            document.getElementById('player-score').textContent = '0';
+            
+            // Reseta os botões
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('hit-btn').disabled = true;
+            document.getElementById('stand-btn').disabled = true;
+            document.getElementById('new-game-btn').disabled = true;
+
+            // Reseta a mensagem
+            const gameMessage = document.getElementById('game-message');
+            gameMessage.textContent = 'Clique em "Iniciar" para começar um novo jogo!';
+            gameMessage.className = 'alert alert-info text-center w-100';
+        }
+    </script>
+
+   
+} 

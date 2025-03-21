@@ -1,0 +1,201 @@
+@{
+	ViewData["Title"] = "Escolher jogadores";
+}
+
+<div class="container py-5">
+	<div class="row justify-content-center mb-4">
+		<div class="col-lg-6">
+			<div class="card shadow-sm">
+				<div class="card-body">
+					<h5 class="card-title text-center mb-3">Configuração do Jogo</h5>
+					<div class="form-group">
+						<label for="numeroJogadores" class="form-label">Número de Jogadores (1-5):</label>
+						<input type="number" class="form-control" id="numeroJogadores" min="1" max="5" value="1">
+						<div class="invalid-feedback">
+							O número de jogadores deve estar entre 1 e 5.
+						</div>
+					</div>
+					<button onclick="iniciarJogo()" class="btn btn-primary mt-3">
+						<i class="bi bi-play-circle me-2"></i>Jogar Agora
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.playing-card {
+		perspective: 1000px;
+		width: 285px;
+		height: 400px;
+		margin-bottom: 2rem;
+	}
+
+	.playing-card-inner {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		text-align: center;
+		transition: transform 0.8s;
+		transform-style: preserve-3d;
+		cursor: pointer;
+	}
+
+	.playing-card:hover .playing-card-inner {
+		transform: rotateY(180deg);
+	}
+
+	.playing-card-front, .playing-card-back {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		-webkit-backface-visibility: hidden;
+		backface-visibility: hidden;
+		border-radius: 15px;
+		box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+	}
+
+	.playing-card-front {
+		background: white;
+		transform: rotateY(180deg);
+		padding: 20px;
+		display: flex;
+		flex-direction: column;
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+
+	.playing-card-back {
+		background: linear-gradient(45deg, #1a237e, #0d47a1);
+		position: absolute;
+		top: 0;
+		left: 0;
+		transform: rotateY(0deg);
+		overflow: hidden;
+	}
+
+	.card-pattern {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-image: repeating-linear-gradient( 45deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 10px, transparent 10px, transparent 20px );
+		background-size: 28px 28px;
+	}
+
+		.card-pattern::before {
+			content: '♠♣♥♦';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			font-size: 2rem;
+			color: rgba(255,255,255,0.2);
+		}
+
+	.card-content {
+		position: relative;
+		height: 100%;
+		border: 2px solid #ddd;
+		border-radius: 10px;
+		padding: 15px;
+	}
+
+	.card-corner {
+		position: absolute;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.top-left {
+		top: 10px;
+		left: 10px;
+	}
+
+	.bottom-right {
+		bottom: 10px;
+		right: 10px;
+		transform: rotate(180deg);
+	}
+
+	.card-value {
+		font-size: 1.5rem;
+		font-weight: bold;
+	}
+
+	.card-suit {
+		font-size: 1.5rem;
+	}
+
+	.card-center {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 80%;
+	}
+
+	/* Ajuste para o Blackjack */
+	.col-md-6:nth-child(2) .card-suit,
+	.col-md-6:nth-child(2) .card-value {
+		color: #dc3545;
+	}
+
+	/* Estilo para o input quando inválido */
+	.form-control.is-invalid {
+		border-color: #dc3545;
+		padding-right: calc(1.5em + 0.75rem);
+		background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+		background-repeat: no-repeat;
+		background-position: right calc(0.375em + 0.1875rem) center;
+		background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+	}
+</style>
+
+@section Scripts {
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const cards = document.querySelectorAll('.game-card');
+			cards.forEach(card => {
+				card.addEventListener('mouseenter', function() {
+					this.querySelector('.game-card-inner').style.transform = 'rotateY(180deg)';
+				});
+
+				card.addEventListener('mouseleave', function() {
+					this.querySelector('.game-card-inner').style.transform = 'rotateY(0)';
+				});
+			});
+
+			// Validação do input de número de jogadores
+			const numeroJogadoresInput = document.getElementById('numeroJogadores');
+			numeroJogadoresInput.addEventListener('input', function() {
+				const value = parseInt(this.value);
+				const isValid = value >= 1 && value <= 5;
+
+				if (!isValid) {
+					this.classList.add('is-invalid');
+				} else {
+					this.classList.remove('is-invalid');
+				}
+			});
+		});
+
+		function iniciarJogo() {
+			var numeroJogadores = document.getElementById('numeroJogadores').value;
+			var numeroJogadoresInt = parseInt(numeroJogadores);
+
+			if (numeroJogadoresInt < 1 || numeroJogadoresInt > 5) {
+				alert('Por favor, selecione um número válido de jogadores (1-5)');
+				return;
+			}
+
+			numeroJogadores++
+
+			window.location.href = `/JogoWeb/Index?jogo=maiorcarta&numeroJogadores=${numeroJogadores}`;
+		}
+	</script>
+} 
