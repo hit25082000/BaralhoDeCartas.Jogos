@@ -49,11 +49,13 @@
 //            try
 //            {
 //                var jogadores = await _blackjackService.IniciarRodadaAsync(baralhoId, numeroJogadores);
-                
-//                return Json(jogadores.Select(j => new {
+
+//                return Json(jogadores.Select(j => new
+//                {
 //                    id = j.JogadorId,
 //                    nome = j.Nome,
-//                    cartas = j.Cartas.Select(c => new {
+//                    cartas = j.Cartas.Select(c => new
+//                    {
 //                        valor = c.Valor,
 //                        valorSimbolico = c.ValorSimbolico,
 //                        naipe = c.Naipe,
@@ -69,18 +71,20 @@
 //        }
 
 //        [HttpGet]
-//        public async Task<IActionResult> ComprarCarta(string baralhoId,[FromBody] JogadorBlackjackDTO jogadorBlackJackDto)
+//        public async Task<IActionResult> ComprarCarta(string baralhoId, [FromBody] JogadorBlackjackDTO jogadorBlackJackDto)
 //        {
 //            try
 //            {
 //                IJogadorDeBlackjack jogadorDeBlackJack = JogadorBlackjackDTO.ToJogadores(new List<JogadorBlackjackDTO> { jogadorBlackJackDto });
 
 //                var carta = await _blackjackService.ComprarCartaAsync(baralhoId, jogadorDeBlackJack);
-                
-//                return Json(new {
+
+//                return Json(new
+//                {
 //                    id = jogadorDeBlackJack.JogadorId,
 //                    nome = jogadorDeBlackJack.Nome,
-//                    cartas = jogadorDeBlackJack.Cartas.Select(c => new {
+//                    cartas = jogadorDeBlackJack.Cartas.Select(c => new
+//                    {
 //                        valor = c.Valor,
 //                        valorSimbolico = c.ValorSimbolico,
 //                        naipe = c.Naipe,
@@ -109,7 +113,8 @@
 //                {
 //                    id = jogadorDeBlackJack.JogadorId,
 //                    nome = jogadorDeBlackJack.Nome,
-//                    cartas = jogadorDeBlackJack.Cartas.Select(c => new {
+//                    cartas = jogadorDeBlackJack.Cartas.Select(c => new
+//                    {
 //                        valor = c.Valor,
 //                        valorSimbolico = c.ValorSimbolico,
 //                        naipe = c.Naipe,
@@ -131,4 +136,4 @@
 //            return PartialView("_CartaPartial", carta);
 //        }
 //    }
-//} 
+//}
