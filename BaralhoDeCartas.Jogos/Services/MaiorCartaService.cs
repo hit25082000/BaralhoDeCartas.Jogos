@@ -51,13 +51,8 @@ namespace BaralhoDeCartas.Services
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
-                IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
-                List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
-
-                // Atualiza quantidade de cartas no baralho
-                int cartasUsadas = jogadores.Sum(jogador => jogador.Cartas.Count);
-                baralho.QuantidadeDeCartasRestantes -= cartasUsadas;
-
+                var baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
+                var jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
                 return _jogoFactory.CriarJogoMaiorCarta(jogadores, baralho);
             });
         }
