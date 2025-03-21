@@ -25,7 +25,8 @@ namespace BaralhoDeCartas.Services
 
         private void ValidarListaJogadores(List<IJogador> jogadores)
         {
-            ValidacaoService.ValidarListaJogadores(jogadores);            
+            ValidacaoService.ValidarListaJogadores(jogadores);
+            
 
             foreach (var jogador in jogadores)
             {
