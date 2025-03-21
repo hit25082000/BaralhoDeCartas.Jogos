@@ -8,20 +8,18 @@ using BaralhoDeCartas.Factory;
 
 namespace BaralhoDeCartas.Controllers   
 {    
-    public class JogoWebController : Controller
+    public class MaiorCartaWebController : Controller
     {
         private readonly IMaiorCartaService _maiorCartaService;
-        private readonly IBlackjackService _blackjackService;
         private readonly IJogadorFactory _jogadorFactory;
 
-        public JogoWebController(IMaiorCartaService jogoService, IBlackjackService blackjackService,IJogadorFactory jogadorFactory)
+        public MaiorCartaWebController(IMaiorCartaService jogoService, IJogadorFactory jogadorFactory)
         {
             _maiorCartaService = jogoService;
-            _blackjackService = blackjackService;
             _jogadorFactory = jogadorFactory;
         }
 
-        public async Task<IActionResult> Index(string jogo, int numeroJogadores)
+        public async Task<IActionResult> Index(int numeroJogadores)
         {
             if (numeroJogadores < 2)
             {
@@ -33,61 +31,13 @@ namespace BaralhoDeCartas.Controllers
                 numeroJogadores = 6;
             }
 
-            if (string.IsNullOrEmpty(jogo))
-            {
-                return RedirectToAction("Index", "Jogos");
-            }
-
-            switch (jogo.ToLower())
-            {
-                case "maiorcarta":
-                    var jogoMaiorCarta = await _maiorCartaService.CriarJogoMaiorCartaAsync(numeroJogadores);
-                    return View("MaiorCarta", jogoMaiorCarta);
-
-                case "blackjack":
-                    var jogoBlackjack = await _blackjackService.CriarJogoBlackJackAsync(numeroJogadores);
-                    return View("Blackjack", jogoBlackjack);
-
-                default:
-                    return RedirectToAction("Index", "Jogos");
-            }
+            var jogoMaiorCarta = await _maiorCartaService.CriarJogoMaiorCartaAsync(numeroJogadores);
+            return View("MaiorCarta", jogoMaiorCarta);
         }
 
-        public IActionResult EscolherJogador()
+        public IActionResult EscolherJogadores()
         {
             return View();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> IniciarMaiorCarta(int numeroJogadores)
-        {
-            try
-            {
-                if (numeroJogadores < 2)
-                {
-                    numeroJogadores = 2;
-                }
-                
-                if (numeroJogadores > 6)
-                {
-                    numeroJogadores = 6;
-                }
-
-                var jogoMaiorCarta = await _maiorCartaService.CriarJogoMaiorCartaAsync(numeroJogadores);
-                
-                return Json(new { 
-                    success = true, 
-                    baralho = new {
-                        baralhoId = jogoMaiorCarta.Baralho.BaralhoId,
-                        quantidadeDeCartasRestantes = jogoMaiorCarta.Baralho.QuantidadeDeCartasRestantes,
-                        estaEmbaralhado = jogoMaiorCarta.Baralho.EstaEmbaralhado
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, error = ex.Message });
-            }
         }
 
         [HttpGet]
@@ -104,7 +54,7 @@ namespace BaralhoDeCartas.Controllers
                 {
                     baralho = await _maiorCartaService.VerificarBaralhoAsync(baralhoId);
                     
-                    if (baralho.QuantidadeDeCartasRestantes < numeroJogadores * 5) // 5 cartas por jogador
+                    if (baralho.QuantidadeDeCartasRestantes < numeroJogadores * 5)
                     {
                         baralho = await _maiorCartaService.FinalizarJogoAsync(baralhoId);
                         
@@ -183,20 +133,6 @@ namespace BaralhoDeCartas.Controllers
         public IActionResult RenderizarCarta([FromBody] CartaViewModel carta)
         {
             return PartialView("_CartaPartial", carta);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> IniciarRodada(string baralhoId, int numeroJogadores)
-        {
-            var jogadores = await _blackjackService.IniciarRodadaAsync(baralhoId, numeroJogadores);
-            return Json(jogadores);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ComprarCarta(string baralhoId, IJogadorDeBlackjack jogadorId)
-        {
-            var jogador = await _blackjackService.ComprarCartaAsync(baralhoId, jogadorId);
-            return Json(jogador);
         }
 
         [HttpPost]

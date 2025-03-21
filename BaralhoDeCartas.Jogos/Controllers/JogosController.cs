@@ -18,6 +18,36 @@ namespace BaralhoDeCartas.Controllers
             return View();
         }
 
+        public IActionResult SelecionarJogo(string jogo, int numeroJogadores = 2)
+        {
+            if (numeroJogadores < 2)
+            {
+                numeroJogadores = 2;
+            }
+
+            if (numeroJogadores > 6)
+            {
+                numeroJogadores = 6;
+            }
+
+            if (string.IsNullOrEmpty(jogo))
+            {
+                return RedirectToAction("Index");
+            }
+
+            switch (jogo.ToLower())
+            {
+                case "maiorcarta":
+                    return RedirectToAction("Index", "MaiorCartaWeb", new { numeroJogadores });
+
+                case "blackjack":
+                    return RedirectToAction("Index", "BlackjackWeb", new { numeroJogadores });
+
+                default:
+                    return RedirectToAction("Index");
+            }
+        }
+
         public async Task<IActionResult> Blackjack(int numeroJogadores = 2)
         {
             // Validação do número de jogadores

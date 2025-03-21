@@ -70,7 +70,9 @@ namespace BaralhoDeCartas.Controllers
             {
                 var jogadores = JogadorBlackjackDTO.ToJogadores(new List<JogadorBlackjackDTO> { jogadorDTO });
                 var jogador = jogadores.First();
-                jogador.Parou = true;
+
+                _jogoService.PararJogador(jogador);
+
                 return Ok(jogador);
             }
             catch (Exception ex)

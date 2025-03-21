@@ -148,7 +148,7 @@
                 jogadaEmAndamento = true;
                 
                 try {
-                    const response = await fetch(`/JogoWeb/DistribuirCartas?baralhoId=${baralhoId}&numeroJogadores=${numeroJogadores}`, {
+                    const response = await fetch(`/MaiorCartaWeb/DistribuirCartas?baralhoId=${baralhoId}&numeroJogadores=${numeroJogadores}`, {
                         method: 'GET'
                     });
 
@@ -188,7 +188,7 @@
                         
                         for (const carta of jogador.cartas) {
                             try {
-                                const cartaResponse = await fetch('/JogoWeb/RenderizarCarta', {
+                                const cartaResponse = await fetch('/MaiorCartaWeb/RenderizarCarta', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json'
@@ -215,7 +215,7 @@
                     }
 
                     // Determinar vencedor usando o backend (MaiorCartaService)
-                    const determinarVencedorResponse = await fetch('/JogoWeb/DeterminarVencedor', {
+                    const determinarVencedorResponse = await fetch('/MaiorCartaWeb/DeterminarVencedor', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

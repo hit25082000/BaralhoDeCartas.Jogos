@@ -137,5 +137,17 @@ namespace BaralhoDeCartas.Services
                 return await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
             });
         }
+
+        public async Task<IJogadorDeBlackjack> PararJogador(IJogadorDeBlackjack jogadorDeBlackJack)
+        {
+            ValidacaoService.ValidarJogadorDeBlackjack(jogadorDeBlackJack);
+
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
+            {
+                jogadorDeBlackJack.Parou = true;
+
+                return jogadorDeBlackJack;
+            });
+        }
     }
 } 

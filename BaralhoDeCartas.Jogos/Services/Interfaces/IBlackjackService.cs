@@ -11,5 +11,6 @@ namespace BaralhoDeCartas.Services.Interfaces
         Task<IBaralho> RetornarCartasAoBaralhoAsync(string baralhoId);
         List<IJogadorDeBlackjack> DeterminarVencedoresAsync(List<IJogadorDeBlackjack> jogadores);
         Task<IJogoBlackJack> CriarJogoBlackJackAsync(int numeroJogadores);
+        Task<IJogadorDeBlackjack> PararJogador(IJogadorDeBlackjack jogadorDeBlackjack);
     }
 } 

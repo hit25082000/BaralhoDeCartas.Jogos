@@ -7,6 +7,7 @@ namespace BaralhoDeCartas.Factory.Interfaces
     public interface IJogadorFactory
     {
         IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int jogadorId, string nomeJogador);
+        IJogadorDeBlackjack CriarJogadorDeBlackJack(JogadorBlackjackDTO jogadorBlackjackDTO);
         IJogador CriarJogador(List<ICarta> cartas, int jogadorId, string nomeJogador);
         IJogador CriarJogador(JogadorDTO jogadorDto);
     }

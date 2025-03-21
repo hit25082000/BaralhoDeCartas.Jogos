@@ -119,9 +119,10 @@ namespace BaralhoDeCartas.Common
 
             // Obtém a primeira letra do naipe (H para HEARTS, S para SPADES, etc.)
             char letraNaipe = ObterLetraNaipe(naipe);
+            char letraValorSimbolico = ObterLetraValorSimbolico(valorSimbolico);
 
             // O código esperado deve ser o valor simbólico seguido da letra do naipe
-            string codigoEsperado = valorSimbolico + letraNaipe;
+            string codigoEsperado = letraValorSimbolico.ToString() + letraNaipe;
 
             if (codigo != codigoEsperado)
             {
@@ -156,6 +157,27 @@ namespace BaralhoDeCartas.Common
                 "CLUBS" => 'C',
                 "DIAMONDS" => 'D',
                 _ => throw new ArgumentException($"Naipe desconhecido: {naipe}")
+            };
+        }
+
+        private static char ObterLetraValorSimbolico(string valorSimbolico)
+        {
+            return valorSimbolico.ToUpper() switch
+            {
+                "ACE" => 'A',
+                "2" => '2',
+                "3" => '3',
+                "4" => '4',
+                "5" => '5',
+                "6" => '6',
+                "7" => '7',
+                "8" => '8',
+                "9" => '9',
+                "10" => '0',
+                "JACK" => 'J',
+                "QUEEN" => 'Q',
+                "KING" => 'K',
+                _ => throw new ArgumentException($"Valor simbólico desconhecido: {valorSimbolico}")
             };
         }
     }

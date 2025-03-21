@@ -28,6 +28,13 @@ namespace BaralhoDeCartas.Factory
         public IJogadorDeBlackjack CriarJogadorDeBlackJack(List<ICarta> cartas, int jogadorId, string nomeJogador)
         {     
             return new JogadorDeBlackjack(cartas, jogadorId, nomeJogador);
+        } 
+        
+        public IJogadorDeBlackjack CriarJogadorDeBlackJack(JogadorBlackjackDTO jogadorBlackjackDTO)
+        {
+            List<ICarta> cartas = _cartaFactory.CriarCartas(jogadorBlackjackDTO.Cartas);
+
+            return new JogadorDeBlackjack(cartas, jogadorBlackjackDTO.JogadorId, jogadorBlackjackDTO.Nome);
         }
     }
 }
