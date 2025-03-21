@@ -1,0 +1,5 @@
+{
+  "baseUrl": "https://localhost:8081",
+  "forceHttps": true,
+  "httpScheme": "https"
+} 

@@ -1,0 +1,375 @@
+.jogo-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.titulo-jogo {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+.info-baralho {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.info-baralho p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #34495e;
+}
+
+.acoes-jogo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.area-jogadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.jogador-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.jogador-card:hover {
+    transform: translateY(-5px);
+}
+
+.jogador-card h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.cartas-jogador {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.carta {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    min-width: 80px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.carta-valor {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.carta-naipe {
+    font-size: 1.2em;
+    color: #e74c3c;
+}
+
+.vencedor {
+    border: 2px solid #27ae60;
+    background-color: #f1f9f1;
+}
+
+.vencedor h3 {
+    color: #27ae60;
+}
+
+.playing-card {
+    width: 120px;
+    height: 180px;
+    perspective: 1000px;
+    margin: 10px;
+}
+
+.playing-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+
+.playing-card.flipped .playing-card-inner {
+    transform: rotateY(180deg);
+}
+
+.playing-card-front, .playing-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.playing-card-front {
+    background: white;
+    transform: rotateY(180deg);
+    padding: 10px;
+}
+
+.playing-card-back {
+    background: linear-gradient(45deg, #1a237e, #3949ab);
+    transform: rotateY(0deg);
+}
+
+.card-pattern {
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.1) 0px,
+        rgba(255,255,255,0.1) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+}
+
+.card-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-corner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-big-symbol {
+    font-size: 3em;
+    line-height: 1;
+}
+
+.card-red {
+    color: #e74c3c;
+}
+
+.card-black {
+    color: #2c3e50;
+}
+
+.card-highlight {
+    animation: pulse 1s;
+    box-shadow: 0 0 15px rgba(39, 174, 96, 0.5);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+} 
+
+.playing-card {
+    width: 120px;
+    height: 180px;
+    margin: 5px;
+    perspective: 1000px;
+    display: inline-block;
+}
+
+.playing-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.card-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-corner {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.top-left {
+    top: 5px;
+    left: 5px;
+}
+
+.bottom-right {
+    bottom: 5px;
+    right: 5px;
+    transform: rotate(180deg);
+}
+
+.card-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.card-suit {
+    font-size: 1.2rem;
+}
+
+.card-big-symbol {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+}
+
+.cards-container {
+    min-height: 200px;
+    padding: 10px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.score-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.card-highlight {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0,123,255,0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(0,123,255,0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0,123,255,0);
+    }
+}
+.playing-card {
+    width: 120px;
+    height: 180px;
+    margin: 5px;
+    perspective: 1000px;
+    display: inline-block;
+}
+
+.playing-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.card-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-corner {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.top-left {
+    top: 5px;
+    left: 5px;
+}
+
+.bottom-right {
+    bottom: 5px;
+    right: 5px;
+    transform: rotate(180deg);
+}
+
+.card-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.card-suit {
+    font-size: 1.2rem;
+}
+
+.card-big-symbol {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+}
+
+.cards-container {
+    min-height: 200px;
+    padding: 10px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.score-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.card-highlight {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0,123,255,0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(0,123,255,0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0,123,255,0);
+    }
+}
