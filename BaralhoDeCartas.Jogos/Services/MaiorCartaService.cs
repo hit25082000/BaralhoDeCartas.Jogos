@@ -25,12 +25,8 @@ namespace BaralhoDeCartas.Services
 
         private void ValidarListaJogadores(List<IJogador> jogadores)
         {
-            ValidacaoService.ValidarListaJogadores(jogadores);
-            
-            // Não validamos cartasDuplicadas ou jogadoresDuplicados se estamos apenas validando a lista
-            // para operações que não requerem um estado completamente consistente
-            
-            // Validações básicas sobre os jogadores
+            ValidacaoService.ValidarListaJogadores(jogadores);            
+
             foreach (var jogador in jogadores)
             {
                 if (jogador == null)
