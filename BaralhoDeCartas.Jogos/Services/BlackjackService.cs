@@ -169,6 +169,11 @@ namespace BaralhoDeCartas.Services
                     throw new Exception("Dealer ou jogador não encontrado");
                 }
                 
+                if (dealer.Estourou && jogador.Estourou)
+                {
+                    return new List<IJogadorDeBlackjack>();
+                }
+                
                 if (jogador.Estourou) return new List<IJogadorDeBlackjack> { dealer };
                 if (dealer.Estourou) return new List<IJogadorDeBlackjack> { jogador };
                 

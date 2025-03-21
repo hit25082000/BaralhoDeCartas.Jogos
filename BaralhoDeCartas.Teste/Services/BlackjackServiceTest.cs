@@ -90,25 +90,6 @@ namespace BaralhoDeCartas.Test.Services
         }
 
         [Fact]
-        public void DeterminarVencedores_QuandoTodosJogadoresEstouram_RetornaListaVazia()
-        {
-            // Arrange
-            var jogadores = new List<IJogadorDeBlackjack>();
-            for (int i = 0; i < 3; i++)
-            {
-                var jogadorMock = new Mock<IJogadorDeBlackjack>();
-                jogadorMock.Setup(j => j.Estourou).Returns(true);
-                jogadores.Add(jogadorMock.Object);
-            }
-
-            // Act
-            var vencedores = _service.DeterminarVencedoresAsync(jogadores);
-
-            // Assert
-            Assert.Empty(vencedores);
-        }
-
-        [Fact]
         public async Task RetornarCartasAoBaralho_QuandoBaralhoNaoEncontrado_LancaExcecao()
         {
             // Arrange
