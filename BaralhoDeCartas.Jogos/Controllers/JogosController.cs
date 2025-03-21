@@ -38,10 +38,10 @@ namespace BaralhoDeCartas.Controllers
             switch (jogo.ToLower())
             {
                 case "maiorcarta":
-                    return RedirectToAction("EscolherJogadores", "MaiorCartaWeb", new { numeroJogadores });
+                    return RedirectToAction("EscolherJogadores", "MaiorCartaWeb");
 
                 case "blackjack":
-                    return RedirectToAction("Index", "BlackjackWeb", new { numeroJogadores });
+                    return RedirectToAction("Index", "BlackjackWeb");
 
                 default:
                     return RedirectToAction("Index");
