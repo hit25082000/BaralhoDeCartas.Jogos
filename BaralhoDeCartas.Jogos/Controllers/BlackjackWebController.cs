@@ -24,17 +24,7 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
-                // Limitar o número de jogadores
-                if (numeroJogadores < 2)
-                {
-                    numeroJogadores = 2;
-                }
-
-                if (numeroJogadores > 6)
-                {
-                    numeroJogadores = 6;
-                }
-
+                // O serviço agora já força exatamente 2 jogadores (dealer e jogador)
                 var jogoBlackjack = await _blackjackService.CriarJogoBlackJackAsync(numeroJogadores);
                 return View("Blackjack", jogoBlackjack);
             }
@@ -50,6 +40,7 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
+                // O serviço agora já força exatamente 2 jogadores (dealer e jogador)
                 var jogadores = await _blackjackService.IniciarRodadaAsync(baralhoId, numeroJogadores);
                 
                 return Json(jogadores.Select(j => new
@@ -58,9 +49,8 @@ namespace BaralhoDeCartas.Controllers
                     nome = j.Nome,
                     cartas = j.Cartas.Select(c => new
                     {
-                        valor = c.Valor,
-                        valorSimbolico = c.ValorSimbolico,
-                        naipe = c.Naipe,
+                        valor = c.ValorSimbolico,
+                        naipe = ObterSimbolo(c.Naipe),
                         imagem = c.ImagemUrl,
                         codigo = c.Codigo
                     })
@@ -77,7 +67,7 @@ namespace BaralhoDeCartas.Controllers
         {
             try
             {
-                // Recuperar informações do jogador existente
+                // Recuperar informações dos jogadores
                 var jogadores = await _blackjackService.IniciarRodadaAsync(baralhoId, 2);
                 var jogadorAtual = jogadores.FirstOrDefault(j => j.JogadorId == jogadorId);
                 
@@ -87,6 +77,10 @@ namespace BaralhoDeCartas.Controllers
                 }
 
                 var carta = await _blackjackService.ComprarCartaAsync(baralhoId, jogadorAtual);
+                
+                // Calcular a pontuação atualizada (não precisamos fazer manualmente, o serviço já faz)
+                int pontuacao = jogadorAtual.CalcularPontuacao();
+                bool estourou = pontuacao > 21;
 
                 return Json(new
                 {
@@ -94,14 +88,13 @@ namespace BaralhoDeCartas.Controllers
                     nome = jogadorAtual.Nome,
                     cartas = jogadorAtual.Cartas.Select(c => new
                     {
-                        valor = c.Valor,
-                        valorSimbolico = c.ValorSimbolico,
-                        naipe = c.Naipe,
+                        valor = c.ValorSimbolico,
+                        naipe = ObterSimbolo(c.Naipe),
                         imagem = c.ImagemUrl,
                         codigo = c.Codigo
                     }),
-                    pontos = jogadorAtual.CalcularPontuacao(),
-                    estourou = jogadorAtual.Estourou
+                    pontos = pontuacao,
+                    estourou = estourou
                 });
             }
             catch (Exception ex)
@@ -116,20 +109,18 @@ namespace BaralhoDeCartas.Controllers
             try
             {
                 var jogadores = await _blackjackService.IniciarRodadaAsync(baralhoId, 2);
-                var dealer = jogadores.FirstOrDefault(j => j.Nome == "Dealer");
-                var jogador = jogadores.FirstOrDefault(j => j.Nome != "Dealer");
                 
-                if (dealer == null || jogador == null)
+                // Usar o novo método para fazer o dealer jogar
+                var dealer = await _blackjackService.JogarDealer(baralhoId, jogadores);
+                
+                // Buscar o jogador para determinar o vencedor
+                var jogador = jogadores.FirstOrDefault(j => j.Nome == "Jogador");
+                
+                if (jogador == null)
                 {
-                    return Json(new { success = false, error = "Jogadores não encontrados" });
+                    return Json(new { success = false, error = "Jogador não encontrado" });
                 }
-
-                // Simular a jogada do dealer (deve continuar comprando até ter pelo menos 17 pontos)
-                while (dealer.CalcularPontuacao() < 17)
-                {
-                    await _blackjackService.ComprarCartaAsync(baralhoId, dealer);
-                }
-
+                
                 // Determinar o vencedor
                 string vencedor = "empate";
                 int pontosJogador = jogador.CalcularPontuacao();
@@ -151,9 +142,8 @@ namespace BaralhoDeCartas.Controllers
                         pontos = pontosDealer,
                         cartas = dealer.Cartas.Select(c => new
                         {
-                            valor = c.Valor,
-                            valorSimbolico = c.ValorSimbolico,
-                            naipe = c.Naipe,
+                            valor = c.ValorSimbolico,
+                            naipe = ObterSimbolo(c.Naipe),
                             imagem = c.ImagemUrl,
                             codigo = c.Codigo
                         })
@@ -184,13 +174,13 @@ namespace BaralhoDeCartas.Controllers
 
                 return Json(new
                 {
+                    success = true,
                     id = jogadorAtual.JogadorId,
                     nome = jogadorAtual.Nome,
                     cartas = jogadorAtual.Cartas.Select(c => new
                     {
-                        valor = c.Valor,
-                        valorSimbolico = c.ValorSimbolico,
-                        naipe = c.Naipe,
+                        valor = c.ValorSimbolico,
+                        naipe = ObterSimbolo(c.Naipe),
                         imagem = c.ImagemUrl,
                         codigo = c.Codigo
                     }),
@@ -222,6 +212,19 @@ namespace BaralhoDeCartas.Controllers
             {
                 return Json(new { success = false, error = ex.Message });
             }
+        }
+        
+        // Função auxiliar para obter o símbolo do naipe
+        private string ObterSimbolo(string naipe)
+        {
+            return naipe.ToLower() switch
+            {
+                "hearts" => "♥",
+                "diamonds" => "♦",
+                "clubs" => "♣",
+                "spades" => "♠",
+                _ => naipe
+            };
         }
     }
 }

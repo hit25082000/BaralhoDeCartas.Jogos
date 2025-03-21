@@ -25,12 +25,15 @@ namespace BaralhoDeCartas.Services
 
         public async Task<IJogoBlackJack> CriarJogoBlackJackAsync(int numeroJogadores)
         {
+            // Forçar exatamente 2 jogadores (dealer e player)
+            numeroJogadores = 2;
+            
             ValidacaoService.ValidarNumeroJogadores(numeroJogadores, int.MaxValue);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
             {
                 IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
-                List<IJogadorDeBlackjack> jogadores = await IniciarRodadaAsync(baralho.BaralhoId, numeroJogadores);
+                List<IJogadorDeBlackjack> jogadores = await CriarJogadoresParaBlackjackAsync(baralho.BaralhoId);
 
                 // Validar a consistência do código de cada carta
                 ValidacaoService.ValidarCodigoCartas(jogadores);
@@ -39,6 +42,29 @@ namespace BaralhoDeCartas.Services
 
                 return _jogoFactory.CriarJogoBlackJack(jogadores, baralho);
             });
+        }
+
+        /// <summary>
+        /// Método específico para criar jogadores para Blackjack (dealer e jogador)
+        /// </summary>
+        private async Task<List<IJogadorDeBlackjack>> CriarJogadoresParaBlackjackAsync(string baralhoId)
+        {
+            // Total de cartas para os dois jogadores
+            int totalCartas = 2 * CartasIniciaisPorJogador;
+            
+            // Comprar todas as cartas de uma vez
+            List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartasAsync(baralhoId, totalCartas);
+            
+            // Separar as cartas para dealer e jogador
+            List<ICarta> cartasDealer = todasAsCartas.Take(CartasIniciaisPorJogador).ToList();
+            List<ICarta> cartasJogador = todasAsCartas.Skip(CartasIniciaisPorJogador).Take(CartasIniciaisPorJogador).ToList();
+            
+            // Criar os jogadores com os nomes adequados
+            IJogadorDeBlackjack dealer = _jogadorFactory.CriarJogadorDeBlackJack(cartasDealer, 1, "Dealer");
+            IJogadorDeBlackjack jogador = _jogadorFactory.CriarJogadorDeBlackJack(cartasJogador, 2, "Jogador");
+            
+            // Retornar a lista de jogadores
+            return new List<IJogadorDeBlackjack> { dealer, jogador };
         }
 
         public async Task<IBaralho> CriarNovoBaralhoAsync()
@@ -60,29 +86,16 @@ namespace BaralhoDeCartas.Services
         public async Task<List<IJogadorDeBlackjack>> IniciarRodadaAsync(string baralhoId, int numeroJogadores)
         {
             ValidacaoService.ValidarBaralhoId(baralhoId);
+            
+            // Forçar exatamente 2 jogadores (dealer e player)
+            numeroJogadores = 2;
+            
             ValidacaoService.ValidarNumeroJogadores(numeroJogadores, int.MaxValue);
 
             try
             {
-                List<IJogadorDeBlackjack> jogadores = new List<IJogadorDeBlackjack>();
-                int totalCartas = numeroJogadores * CartasIniciaisPorJogador;
-
-                List<ICarta> todasAsCartas = await _baralhoApiClient.ComprarCartasAsync(baralhoId, totalCartas);
-                
-                for (int i = 0; i < numeroJogadores; i++)
-                {
-                    List<ICarta> cartasDoJogador = todasAsCartas.Skip(i * CartasIniciaisPorJogador)
-                              .Take(CartasIniciaisPorJogador)
-                              .ToList();
-
-                    int jogadorId = i + 1;
-                    string nomeJogador = $"Jogador {jogadorId}";
-
-                    IJogadorDeBlackjack jogador = _jogadorFactory.CriarJogadorDeBlackJack(cartasDoJogador, jogadorId, nomeJogador);
-                    jogadores.Add(jogador);
-                }
-
-                return jogadores;
+                // Usar o método específico para criar jogadores de Blackjack
+                return await CriarJogadoresParaBlackjackAsync(baralhoId);
             }
             catch (BaralhoNotFoundException)
             {
@@ -113,7 +126,15 @@ namespace BaralhoDeCartas.Services
                     jogador.Cartas.Add(novaCarta);
                 }
 
-                jogador.CalcularPontuacao();
+                // Calcular pontuação após adicionar carta
+                int pontuacao = jogador.CalcularPontuacao();
+                
+                // Verificar se é a vez do dealer e se ele deve continuar comprando cartas
+                if (jogador.Nome == "Dealer" && pontuacao < 17)
+                {
+                    // Dealer deve comprar até ter pelo menos 17 pontos
+                    return await ComprarCartaAsync(baralhoId, jogador);
+                }
 
                 return novaCarta;
             }
@@ -134,25 +155,62 @@ namespace BaralhoDeCartas.Services
             
             return ServiceExceptionHandler.HandleServiceException(() =>
             {
-                // Filtra os jogadores que não estouraram
-                var jogadoresValidos = jogadores.Where(j => !j.Estourou).ToList();
-
-                // Se não houver jogadores válidos (todos estouraram), retorna lista vazia
-                if (!jogadoresValidos.Any())
+                var dealer = jogadores.FirstOrDefault(j => j.Nome == "Dealer");
+                var jogador = jogadores.FirstOrDefault(j => j.Nome == "Jogador");
+                
+                if (dealer == null || jogador == null)
                 {
-                    return new List<IJogadorDeBlackjack>();
+                    throw new Exception("Dealer ou jogador não encontrado");
                 }
-
-                // Verifica se algum jogador tem blackjack (21 com 2 cartas)
-                var jogadoresComBlackjack = jogadoresValidos.Where(j => j.TemBlackjack()).ToList();
-                if (jogadoresComBlackjack.Any())
+                
+                int pontosDealer = dealer.CalcularPontuacao();
+                int pontosJogador = jogador.CalcularPontuacao();
+                
+                // Se o jogador estourou, o dealer vence
+                if (jogador.Estourou)
                 {
-                    return jogadoresComBlackjack;
+                    return new List<IJogadorDeBlackjack> { dealer };
                 }
-
-                // Caso contrário, retorna os jogadores com maior pontuação
-                var maiorPontuacao = jogadoresValidos.Max(j => j.CalcularPontuacao());
-                return jogadoresValidos.Where(j => j.CalcularPontuacao() == maiorPontuacao).ToList();
+                
+                // Se o dealer estourou, o jogador vence
+                if (dealer.Estourou)
+                {
+                    return new List<IJogadorDeBlackjack> { jogador };
+                }
+                
+                // Jogador tem blackjack
+                if (jogador.TemBlackjack())
+                {
+                    // Se dealer também tem blackjack, é empate
+                    if (dealer.TemBlackjack())
+                    {
+                        return new List<IJogadorDeBlackjack> { dealer, jogador };
+                    }
+                    
+                    // Senão, jogador vence
+                    return new List<IJogadorDeBlackjack> { jogador };
+                }
+                
+                // Dealer tem blackjack (e jogador não tem)
+                if (dealer.TemBlackjack())
+                {
+                    return new List<IJogadorDeBlackjack> { dealer };
+                }
+                
+                // Ambos não estouraram e não têm blackjack, compara pontuação
+                if (pontosDealer > pontosJogador)
+                {
+                    return new List<IJogadorDeBlackjack> { dealer };
+                }
+                else if (pontosJogador > pontosDealer)
+                {
+                    return new List<IJogadorDeBlackjack> { jogador };
+                }
+                else
+                {
+                    // Empate
+                    return new List<IJogadorDeBlackjack> { dealer, jogador };
+                }
             });
         }
 
@@ -184,6 +242,44 @@ namespace BaralhoDeCartas.Services
                 jogadorDeBlackJack.Parou = true;
 
                 return jogadorDeBlackJack;
+            });
+        }
+        
+        /// <summary>
+        /// Executa a jogada do dealer após o jogador parar
+        /// </summary>
+        public async Task<IJogadorDeBlackjack> JogarDealer(string baralhoId, List<IJogadorDeBlackjack> jogadores)
+        {
+            ValidacaoService.ValidarBaralhoId(baralhoId);
+            ValidacaoService.ValidarListaJogadores(jogadores);
+            
+            return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
+            {
+                // Encontrar o dealer
+                var dealer = jogadores.FirstOrDefault(j => j.Nome == "Dealer");
+                if (dealer == null)
+                {
+                    throw new Exception("Dealer não encontrado");
+                }
+                
+                // Verificar se o jogador estourou (dealer não precisa jogar)
+                var jogador = jogadores.FirstOrDefault(j => j.Nome == "Jogador");
+                if (jogador != null && jogador.Estourou)
+                {
+                    return dealer;
+                }
+                
+                // Calcular pontuação atual do dealer
+                int pontuacaoDealer = dealer.CalcularPontuacao();
+                
+                // Dealer deve comprar cartas até ter pelo menos 17 pontos
+                while (pontuacaoDealer < 17)
+                {
+                    await ComprarCartaAsync(baralhoId, dealer);
+                    pontuacaoDealer = dealer.CalcularPontuacao();
+                }
+                
+                return dealer;
             });
         }
     }

@@ -6,104 +6,98 @@
 
 <link rel="stylesheet" href="~/css/jogo.css" />
 
-<div class="jogo-container">
-    <h1 class="titulo-jogo">Blackjack</h1>
+<div class="container py-5">
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10 text-center">
+            <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Blackjack</h1>
+            <p class="lead text-muted animate__animated animate__fadeInUp">Chegue o mais próximo de 21 sem ultrapassar!</p>
+        </div>
+    </div>
 
-    <div class="info-baralho">        
-        <div class="jogadores-contador">            
-            <div class="jogadores-info">
-                <p>ID do Baralho: <span class="badge bg-secondary">@Model.Baralho.BaralhoId</span></p>
-                <p>Cartas Restantes: <span class="badge bg-info">@Model.Baralho.QuantidadeDeCartasRestantes</span></p>
-                <p>Status: <span class="badge @(Model.Baralho.EstaEmbaralhado ? "bg-success" : "bg-warning")">
-                    @(Model.Baralho.EstaEmbaralhado ? "Embaralhado" : "Não Embaralhado")
-                </span></p>
+    <div class="row justify-content-center mb-3">
+        <div class="col-lg-10">
+            <div class="info-baralho card shadow-sm mb-4">
+                <div class="card-body p-3">
+                    <div class="jogadores-info d-flex justify-content-between align-items-center">
+                        <p class="mb-0">ID do Baralho: <span class="badge bg-secondary">@Model.Baralho.BaralhoId</span></p>
+                        <p class="mb-0">Cartas Restantes: <span class="badge bg-info" id="cartas-restantes">@Model.Baralho.QuantidadeDeCartasRestantes</span></p>
+                        <p class="mb-0">Status: <span class="badge @(Model.Baralho.EstaEmbaralhado ? "bg-success" : "bg-warning")">
+                            @(Model.Baralho.EstaEmbaralhado ? "Embaralhado" : "Não Embaralhado")
+                        </span></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
-                <!-- Área do Dealer -->
-                <div class="card shadow mb-4">
-                    <div class="card-header bg-danger text-white">
-                        <h4 class="m-0"><i class="bi bi-person-fill me-2"></i>Dealer</h4>
-                    </div>
-                    <div class="card-body">
-                        <div id="dealer-area" class="text-center">
-                            <div id="dealer-cards" class="cartas-jogador">
-                                @if (Model.JogadorAtual.Cartas != null && Model.JogadorAtual.Cartas.Any())
-                                {
-                                    foreach (var carta in Model.JogadorAtual.Cartas)
-                                    {
-                                        <partial name="_CartaPartial" model="carta" />
-                                    }
-                                }
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6 text-center mb-4 mb-md-0">
+                            <h3 class="mb-3">Dealer</h3>
+                            <div id="dealer-cards" class="cards-container d-flex justify-content-center flex-wrap"></div>
+                            <div class="score-display mt-3">
+                                <span>Pontos: </span>
+                                <span id="dealer-score">0</span>
                             </div>
-                            <div class="mt-3">
-                                <span class="badge bg-primary fs-5">Pontos: <span id="dealer-score">0</span></span>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <h3 class="mb-3">Você</h3>
+                            <div id="player-cards" class="cards-container d-flex justify-content-center flex-wrap"></div>
+                            <div class="score-display mt-3">
+                                <span>Pontos: </span>
+                                <span id="player-score">0</span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Área do Jogador -->
-                <div class="card shadow mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="m-0"><i class="bi bi-person me-2"></i>Você</h4>
-                    </div>
-                    <div class="card-body">
-                        <div id="player-area" class="text-center">
-                            <div id="player-cards" class="cartas-jogador">
-                                @if (Model.JogadorAtual != null && Model.JogadorAtual.Cartas != null && Model.JogadorAtual.Cartas.Any())
-                                {
-                                    foreach (var carta in Model.JogadorAtual.Cartas)
-                                    {
-                                        <partial name="_CartaPartial" model="carta" />
-                                    }
-                                }
-                            </div>
-                            <div class="mt-3">
-                                <span class="badge bg-primary fs-5">Pontos: <span id="player-score">0</span></span>
-                            </div>
+                    <div class="d-flex justify-content-center mb-4">
+                        <div id="game-message" class="alert alert-info text-center w-100">
+                            Clique em "Iniciar" para começar um novo jogo!
                         </div>
                     </div>
-                </div>
 
-                <div class="text-center mt-4 mb-4">
-                    <div id="message-area" class="alert alert-info mb-4" role="alert">
-                        Clique em "Iniciar" para começar uma nova rodada!
+                    <div class="text-center mb-4">
+                        <div id="control-buttons">
+                            <button id="start-btn" class="btn btn-primary btn-lg me-2" onclick="iniciarRodada()">
+                                <i class="bi bi-play-circle me-2"></i>Iniciar
+                            </button>
+                            <button id="hit-btn" class="btn btn-success btn-lg me-2" disabled onclick="comprarCarta(2)">
+                                <i class="bi bi-plus-circle me-2"></i>Pedir Carta
+                            </button>
+                            <button id="stand-btn" class="btn btn-warning btn-lg" disabled onclick="parar(2)">
+                                <i class="bi bi-hand-thumbs-up me-2"></i>Parar
+                            </button>
+                        </div>
                     </div>
-                    <div id="control-buttons">
-                        <button id="start-btn" class="btn btn-primary btn-lg me-2">
-                            <i class="bi bi-play-circle me-2"></i>Iniciar
-                        </button>
-                        <button id="hit-btn" class="btn btn-success btn-lg me-2" disabled>
-                            <i class="bi bi-plus-circle me-2"></i>Pedir Carta
-                        </button>
-                        <button id="stand-btn" class="btn btn-warning btn-lg" disabled>
-                            <i class="bi bi-hand-thumbs-up me-2"></i>Parar
-                        </button>
-                        <button id="new-game-btn" class="btn btn-outline-secondary btn-lg ms-2" disabled>
+
+                    <div class="text-center">
+                        <button id="new-game-btn" class="btn btn-outline-secondary btn-lg" disabled onclick="novoJogo()">
                             <i class="bi bi-arrow-repeat me-2"></i>Novo Jogo
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="card mt-4 shadow">
-                    <div class="card-body">
-                        <h4 class="card-title">Regras do Blackjack</h4>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">O objetivo é ter uma mão com valor mais próximo de 21 sem ultrapassar</li>
-                            <li class="list-group-item">Cartas numéricas (2-10) valem seu valor nominal</li>
-                            <li class="list-group-item">Figuras (J, Q, K) valem 10 pontos</li>
-                            <li class="list-group-item">Áses podem valer 1 ou 11 pontos (o que for melhor para a mão)</li>
-                            <li class="list-group-item">Você começa com 2 cartas e pode pedir mais ("hit") ou parar ("stand")</li>
-                            <li class="list-group-item">Se ultrapassar 21, você perde automaticamente ("bust")</li>
-                            <li class="list-group-item">O dealer deve pedir cartas até ter pelo menos 17 pontos</li>
-                            <li class="list-group-item">Blackjack natural (21 com as primeiras 2 cartas) vence automaticamente</li>
-                        </ul>
-                    </div>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">Regras do Blackjack</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">O objetivo é ter uma mão com valor mais próximo de 21 sem ultrapassar</li>
+                        <li class="list-group-item">Cartas numéricas (2-10) valem seu valor nominal</li>
+                        <li class="list-group-item">Figuras (J, Q, K) valem 10 pontos</li>
+                        <li class="list-group-item">Áses podem valer 1 ou 11 pontos (o que for melhor para a mão)</li>
+                        <li class="list-group-item">Você começa com 2 cartas e pode pedir mais ("hit") ou parar ("stand")</li>
+                        <li class="list-group-item">Se ultrapassar 21, você perde automaticamente ("bust")</li>
+                        <li class="list-group-item">O dealer deve pedir cartas até ter pelo menos 17 pontos</li>
+                        <li class="list-group-item">Blackjack natural (21 com as primeiras 2 cartas) vence automaticamente</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -112,432 +106,312 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dealerCards = document.getElementById('dealer-cards');
-            const dealerScore = document.getElementById('dealer-score');
-            const playerCards = document.getElementById('player-cards');
-            const playerScore = document.getElementById('player-score');
-            const messageArea = document.getElementById('message-area');
-            const startBtn = document.getElementById('start-btn');
-            const hitBtn = document.getElementById('hit-btn');
-            const standBtn = document.getElementById('stand-btn');
-            const newGameBtn = document.getElementById('new-game-btn');
-            
-            // Variável para controlar se uma jogada está em andamento
-            let jogadaEmAndamento = false;
-            // Variável para armazenar o ID do baralho atual
-            let baralhoId = '@Model.Baralho.BaralhoId';
-            // Jogador atual
-            let jogadorId = 0;
+        // Variáveis globais do jogo
+        const baralhoId = "@Model.Baralho.BaralhoId";
+        let jogadoresInfo = [];
+        let dealerInfo = null;
+        let jogadorInfo = null;
+        let jogoEmAndamento = false;
+        let cartasRestantes = @Model.Baralho.QuantidadeDeCartasRestantes;
+        
+        // Elementos do DOM
+        const dealerCards = document.getElementById('dealer-cards');
+        const playerCards = document.getElementById('player-cards');
+        const dealerScore = document.getElementById('dealer-score');
+        const playerScore = document.getElementById('player-score');
+        const gameMessage = document.getElementById('game-message');
+        const startBtn = document.getElementById('start-btn');
+        const hitBtn = document.getElementById('hit-btn');
+        const standBtn = document.getElementById('stand-btn');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const cartasRestantesEl = document.getElementById('cartas-restantes');
 
-            async function iniciarRodada() {
-                // Evitar múltiplos cliques simultâneos
-                if (jogadaEmAndamento) {
-                    return;
+        // Função para criar um elemento de carta visualmente
+        function criarElementoCarta(carta, viradaParaCima = true) {
+            const cartaElement = document.createElement('div');
+            cartaElement.className = 'playing-card';
+            
+            if (viradaParaCima) {
+                cartaElement.innerHTML = `
+                    <div class="card-visual" style="background-color: white; width: 80px; height: 120px; border-radius: 5px; margin: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; position: relative;">
+                        <div class="card-valor" style="font-size: 24px; position: absolute; top: 5px; left: 5px;">${carta.valor}</div>
+                        <div class="card-naipe" style="font-size: 30px; color: ${carta.naipe === '♥' || carta.naipe === '♦' ? 'red' : 'black'};">${carta.naipe}</div>
+                        <div class="card-valor-bottom" style="font-size: 24px; position: absolute; bottom: 5px; right: 5px; transform: rotate(180deg);">${carta.valor}</div>
+                    </div>
+                `;
+            } else {
+                cartaElement.innerHTML = `
+                    <div class="card-back" style="background-color: #7b1fa2; width: 80px; height: 120px; border-radius: 5px; margin: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; background-image: repeating-linear-gradient(45deg, #6e1b9a 0, #6e1b9a 10px, #7b1fa2 10px, #7b1fa2 20px);">
+                    </div>
+                `;
+            }
+            
+            return cartaElement;
+        }
+
+        // Função para limpar as áreas de cartas
+        function limparCartas() {
+            dealerCards.innerHTML = '';
+            playerCards.innerHTML = '';
+        }
+
+        // Função para atualizar o contador de cartas restantes
+        function atualizarCartasRestantes(valor) {
+            cartasRestantes = valor;
+            cartasRestantesEl.textContent = valor;
+        }
+
+        // Função para iniciar uma nova rodada
+        async function iniciarRodada() {
+            try {
+                limparCartas();
+                
+                const response = await fetch(`/BlackjackWeb/IniciarRodada?baralhoId=${baralhoId}&numeroJogadores=2`);
+                if (!response.ok) {
+                    throw new Error('Erro ao iniciar rodada');
                 }
                 
-                // Desabilitar o botão durante a jogada
+                jogadoresInfo = await response.json();
+                
+                // O primeiro jogador (índice 0) é o dealer
+                dealerInfo = jogadoresInfo.find(j => j.nome === "Dealer");
+                jogadorInfo = jogadoresInfo.find(j => j.nome === "Jogador");
+                
+                if (!dealerInfo || !jogadorInfo) {
+                    throw new Error('Erro ao identificar jogadores');
+                }
+                
+                // Atualizar o estado do jogo
+                jogoEmAndamento = true;
+                
+                // Mostrar as cartas do dealer (primeira carta virada para baixo)
+                dealerInfo.cartas.forEach((carta, index) => {
+                    dealerCards.appendChild(criarElementoCarta(carta, index > 0));
+                });
+                
+                // Mostrar as cartas do jogador
+                jogadorInfo.cartas.forEach(carta => {
+                    playerCards.appendChild(criarElementoCarta(carta));
+                });
+                
+                // Atualizar a pontuação do jogador
+                const pontuacaoJogador = calcularPontuacao(jogadorInfo.cartas);
+                playerScore.textContent = pontuacaoJogador;
+                
+                // Esconder a pontuação do dealer (apenas mostrar a segunda carta)
+                dealerScore.textContent = '?';
+                
+                // Atualizar mensagem e botões
+                gameMessage.textContent = 'Sua vez de jogar!';
+                gameMessage.className = 'alert alert-info text-center w-100';
+                
                 startBtn.disabled = true;
-                startBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processando...';
-                jogadaEmAndamento = true;
-                
-                try {
-                    const response = await fetch(`/BlackjackWeb/IniciarRodada?baralhoId=${baralhoId}&numeroJogadores=2`, {
-                        method: 'GET'
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Erro ao iniciar rodada');
-                    }
-                    
-                    const jogadores = await response.json();
-                    
-                    // Limpar áreas de cartas
-                    dealerCards.innerHTML = '';
-                    playerCards.innerHTML = '';
-
-                    // Renderizar cartas para cada jogador
-                    for (const jogador of jogadores) {
-                        // Identifica se é o dealer ou o jogador
-                        const isDealer = jogador.nome === 'Dealer';
-                        const areaId = isDealer ? 'dealer-cards' : 'player-cards';
-                        const jogadorArea = document.getElementById(areaId);
-                        
-                        if (!jogadorArea) {
-                            console.error(`Área de cartas com id ${areaId} não encontrada`);
-                            continue;
-                        }
-                        
-                        // Armazena o ID do jogador humano
-                        if (!isDealer) {
-                            jogadorId = jogador.id;
-                        }
-                        
-                        for (const carta of jogador.cartas) {
-                            try {
-                                const cartaResponse = await fetch('/BlackjackWeb/RenderizarCarta', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        valor: carta.valor,
-                                        valorSimbolico: carta.valorSimbolico,
-                                        naipe: carta.naipe,
-                                        imagemUrl: carta.imagem,
-                                        codigo: carta.codigo || carta.valorSimbolico + carta.naipe
-                                    })
-                                });
-
-                                if (cartaResponse.ok) {
-                                    const cartaHtml = await cartaResponse.text();
-                                    jogadorArea.insertAdjacentHTML('beforeend', cartaHtml);
-                                } else {
-                                    console.error(`Erro ao renderizar carta:`, await cartaResponse.text());
-                                }
-                            } catch (error) {
-                                console.error(`Erro ao processar carta:`, error);
-                            }
-                        }
-                        
-                        // Atualiza pontos
-                        if (isDealer) {
-                            dealerScore.textContent = calcularPontos(jogador.cartas);
-                        } else {
-                            playerScore.textContent = calcularPontos(jogador.cartas);
-                        }
-                    }
-                    
-                    // Verifica se tem blackjack natural
-                    const pontosJogador = parseInt(playerScore.textContent);
-                    const pontosDealer = parseInt(dealerScore.textContent);
-                    
-                    if (pontosJogador === 21) {
-                        messageArea.className = 'alert alert-success mb-4';
-                        messageArea.textContent = 'Blackjack! Você venceu!';
-                        finalizarJogo();
-                    } else {
-                        // Habilita botões de jogo
-                        hitBtn.disabled = false;
-                        standBtn.disabled = false;
-                        
-                        messageArea.className = 'alert alert-info mb-4';
-                        messageArea.textContent = 'Sua vez de jogar!';
-                    }
-                    
-                } catch (error) {
-                    console.error('Erro:', error);
-                    messageArea.className = 'alert alert-danger mb-4';
-                    messageArea.textContent = 'Erro ao iniciar a rodada. Tente novamente.';
-                } finally {
-                    // Reabilitar o botão iniciar se algo deu errado
-                    startBtn.disabled = true;
-                    startBtn.innerHTML = '<i class="bi bi-play-circle me-2"></i>Iniciar';
-                    jogadaEmAndamento = false;
-                }
-            }
-            
-            async function comprarCarta() {
-                if (jogadaEmAndamento || !jogadorId) {
-                    return;
-                }
-                
-                jogadaEmAndamento = true;
-                hitBtn.disabled = true;
-                standBtn.disabled = true;
-                
-                try {
-                    const response = await fetch(`/BlackjackWeb/ComprarCarta?baralhoId=${baralhoId}&jogadorId=${jogadorId}`, {
-                        method: 'GET'
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Erro ao comprar carta');
-                    }
-                    
-                    const jogador = await response.json();
-                    
-                    // Limpa área do jogador para renderizar todas as cartas
-                    playerCards.innerHTML = '';
-                    
-                    // Renderiza cartas atualizadas
-                    for (const carta of jogador.cartas) {
-                        try {
-                            const cartaResponse = await fetch('/BlackjackWeb/RenderizarCarta', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    valor: carta.valor,
-                                    valorSimbolico: carta.valorSimbolico,
-                                    naipe: carta.naipe,
-                                    imagemUrl: carta.imagem,
-                                    codigo: carta.codigo || carta.valorSimbolico + carta.naipe
-                                })
-                            });
-
-                            if (cartaResponse.ok) {
-                                const cartaHtml = await cartaResponse.text();
-                                playerCards.insertAdjacentHTML('beforeend', cartaHtml);
-                            } else {
-                                console.error(`Erro ao renderizar carta:`, await cartaResponse.text());
-                            }
-                        } catch (error) {
-                            console.error(`Erro ao processar carta:`, error);
-                        }
-                    }
-                    
-                    // Atualiza pontuação
-                    playerScore.textContent = jogador.pontos;
-                    
-                    // Verifica se estourou
-                    if (jogador.estourou || jogador.pontos > 21) {
-                        messageArea.className = 'alert alert-danger mb-4';
-                        messageArea.textContent = 'Você estourou! Dealer vence.';
-                        finalizarJogo();
-                    } else if (jogador.pontos === 21) {
-                        messageArea.className = 'alert alert-success mb-4';
-                        messageArea.textContent = 'Você chegou a 21! Excelente!';
-                        await parar();
-                    } else {
-                        messageArea.className = 'alert alert-info mb-4';
-                        messageArea.textContent = `Você tem ${jogador.pontos} pontos. Quer mais uma carta?`;
-                        
-                        // Reabilita botões
-                        hitBtn.disabled = false;
-                        standBtn.disabled = false;
-                    }
-                    
-                } catch (error) {
-                    console.error('Erro:', error);
-                    messageArea.className = 'alert alert-danger mb-4';
-                    messageArea.textContent = 'Erro ao comprar carta. Tente novamente.';
-                    
-                    // Reabilita botões em caso de erro
-                    hitBtn.disabled = false;
-                    standBtn.disabled = false;
-                } finally {
-                    jogadaEmAndamento = false;
-                }
-            }
-            
-            async function parar() {
-                if (jogadaEmAndamento || !jogadorId) {
-                    return;
-                }
-                
-                jogadaEmAndamento = true;
-                hitBtn.disabled = true;
-                standBtn.disabled = true;
-                
-                try {
-                    // Primeiro marca que o jogador parou
-                    const paraResponse = await fetch(`/BlackjackWeb/Parar?baralhoId=${baralhoId}&jogadorId=${jogadorId}`, {
-                        method: 'GET'
-                    });
-                    
-                    if (!paraResponse.ok) {
-                        throw new Error('Erro ao parar jogada');
-                    }
-                    
-                    messageArea.className = 'alert alert-info mb-4';
-                    messageArea.textContent = 'Vez do dealer...';
-                    
-                    // Depois é a vez do dealer jogar
-                    const response = await fetch(`/BlackjackWeb/DealerJogar?baralhoId=${baralhoId}`, {
-                        method: 'GET'
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Erro na jogada do dealer');
-                    }
-                    
-                    const resultado = await response.json();
-                    
-                    if (!resultado.success) {
-                        throw new Error(resultado.error || 'Erro na jogada do dealer');
-                    }
-                    
-                    // Atualizar cartas do dealer
-                    dealerCards.innerHTML = '';
-                    
-                    for (const carta of resultado.dealer.cartas) {
-                        try {
-                            const cartaResponse = await fetch('/BlackjackWeb/RenderizarCarta', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    valor: carta.valor,
-                                    valorSimbolico: carta.valorSimbolico,
-                                    naipe: carta.naipe,
-                                    imagemUrl: carta.imagem,
-                                    codigo: carta.codigo || carta.valorSimbolico + carta.naipe
-                                })
-                            });
-
-                            if (cartaResponse.ok) {
-                                const cartaHtml = await cartaResponse.text();
-                                dealerCards.insertAdjacentHTML('beforeend', cartaHtml);
-                            }
-                        } catch (error) {
-                            console.error(`Erro ao processar carta do dealer:`, error);
-                        }
-                    }
-                    
-                    // Atualizar pontuação do dealer
-                    dealerScore.textContent = resultado.dealer.pontos;
-                    
-                    // Mostrar resultado
-                    if (resultado.vencedor === 'player') {
-                        messageArea.className = 'alert alert-success mb-4';
-                        messageArea.textContent = 'Você venceu!';
-                    } else if (resultado.vencedor === 'dealer') {
-                        messageArea.className = 'alert alert-danger mb-4';
-                        messageArea.textContent = 'Dealer venceu!';
-                    } else {
-                        messageArea.className = 'alert alert-warning mb-4';
-                        messageArea.textContent = 'Empate!';
-                    }
-                    
-                    finalizarJogo();
-                    
-                } catch (error) {
-                    console.error('Erro:', error);
-                    messageArea.className = 'alert alert-danger mb-4';
-                    messageArea.textContent = 'Erro na jogada do dealer. Tente novamente.';
-                } finally {
-                    jogadaEmAndamento = false;
-                }
-            }
-            
-            function finalizarJogo() {
-                // Desabilita botões de jogo
-                hitBtn.disabled = true;
-                standBtn.disabled = true;
-                
-                // Habilita botão de novo jogo
+                hitBtn.disabled = false;
+                standBtn.disabled = false;
                 newGameBtn.disabled = false;
                 
-                // Opcionalmente, poderia chamar FinalizarJogo no backend
-                fetch(`/BlackjackWeb/FinalizarJogo?baralhoId=${baralhoId}`, {
-                    method: 'POST'
-                }).catch(error => {
-                    console.error('Erro ao finalizar jogo no servidor:', error);
-                });
+                // Atualizar cartas restantes
+                atualizarCartasRestantes(cartasRestantes - 4); // 4 cartas foram distribuídas (2 para cada jogador)
+                
+                // Verificar se o jogador já tem blackjack
+                if (pontuacaoJogador === 21) {
+                    await parar(jogadorInfo.id);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao iniciar rodada:', error);
+                gameMessage.textContent = 'Erro ao iniciar rodada. Tente novamente.';
+                gameMessage.className = 'alert alert-danger text-center w-100';
+            }
+        }
+        
+        // Função para calcular a pontuação de uma mão
+        function calcularPontuacao(cartas) {
+            let pontos = 0;
+            let ases = 0;
+            
+            cartas.forEach(carta => {
+                if (['J', 'Q', 'K'].includes(carta.valor)) {
+                    pontos += 10;
+                } else if (carta.valor === 'A') {
+                    pontos += 11;
+                    ases++;
+                } else {
+                    pontos += parseInt(carta.valor);
+                }
+            });
+            
+            // Ajustar valor dos ases se necessário
+            while (pontos > 21 && ases > 0) {
+                pontos -= 10;
+                ases--;
             }
             
-            function prepareNewGame() {
-                // Reseta o estado do jogo
+            return pontos;
+        }
+        
+        // Função para o jogador comprar uma carta
+        async function comprarCarta(jogadorId) {
+            if (!jogoEmAndamento) return;
+            
+            try {
+                const response = await fetch(`/BlackjackWeb/ComprarCarta?baralhoId=${baralhoId}&jogadorId=${jogadorId}`);
+                if (!response.ok) {
+                    throw new Error('Erro ao comprar carta');
+                }
+                
+                const resultado = await response.json();
+                
+                // Atualizar as informações do jogador
+                jogadorInfo = resultado;
+                
+                // Adicionar a nova carta à interface
+                const novaCarta = jogadorInfo.cartas[jogadorInfo.cartas.length - 1];
+                playerCards.appendChild(criarElementoCarta(novaCarta));
+                
+                // Atualizar a pontuação
+                playerScore.textContent = jogadorInfo.pontos;
+                
+                // Atualizar cartas restantes
+                atualizarCartasRestantes(cartasRestantes - 1);
+                
+                // Verificar se o jogador estourou
+                if (jogadorInfo.estourou) {
+                    gameMessage.textContent = 'Você estourou! Dealer vence.';
+                    gameMessage.className = 'alert alert-danger text-center w-100';
+                    await finalizarJogo('dealer');
+                }
+                
+                // Verificar se o jogador atingiu 21
+                if (jogadorInfo.pontos === 21) {
+                    await parar(jogadorId);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao comprar carta:', error);
+                gameMessage.textContent = 'Erro ao comprar carta. Tente novamente.';
+                gameMessage.className = 'alert alert-danger text-center w-100';
+            }
+        }
+        
+        // Função para o jogador parar
+        async function parar(jogadorId) {
+            if (!jogoEmAndamento) return;
+            
+            try {
+                // Desabilitar botões durante a jogada do dealer
+                hitBtn.disabled = true;
+                standBtn.disabled = true;
+                
+                // Marcar que o jogador parou
+                const paraResponse = await fetch(`/BlackjackWeb/Parar?baralhoId=${baralhoId}&jogadorId=${jogadorId}`);
+                if (!paraResponse.ok) {
+                    throw new Error('Erro ao parar jogada');
+                }
+                
+                // Revelar todas as cartas do dealer
                 dealerCards.innerHTML = '';
-                playerCards.innerHTML = '';
+                dealerInfo.cartas.forEach(carta => {
+                    dealerCards.appendChild(criarElementoCarta(carta, true));
+                });
+                
+                // Agora, fazer o dealer jogar
+                const dealerResponse = await fetch(`/BlackjackWeb/DealerJogar?baralhoId=${baralhoId}`);
+                if (!dealerResponse.ok) {
+                    throw new Error('Erro na jogada do dealer');
+                }
+                
+                const resultadoDealer = await dealerResponse.json();
+                
+                // Atualizar cartas e pontuação do dealer
+                dealerCards.innerHTML = '';
+                resultadoDealer.dealer.cartas.forEach(carta => {
+                    dealerCards.appendChild(criarElementoCarta(carta, true));
+                });
+                dealerScore.textContent = resultadoDealer.dealer.pontos;
+                
+                // Atualizar cartas restantes (contar quantas cartas o dealer pegou adicionalmente)
+                const cartasAdicionaisDealer = resultadoDealer.dealer.cartas.length - dealerInfo.cartas.length;
+                atualizarCartasRestantes(cartasRestantes - cartasAdicionaisDealer);
+                
+                // Determinar o vencedor
+                await finalizarJogo(resultadoDealer.vencedor);
+                
+            } catch (error) {
+                console.error('Erro ao parar:', error);
+                gameMessage.textContent = 'Erro ao finalizar jogada. Tente novamente.';
+                gameMessage.className = 'alert alert-danger text-center w-100';
+            }
+        }
+        
+        // Função para finalizar o jogo e mostrar o resultado
+        async function finalizarJogo(vencedor) {
+            jogoEmAndamento = false;
+            hitBtn.disabled = true;
+            standBtn.disabled = true;
+            newGameBtn.disabled = false;
+            
+            // Determinar mensagem e estilo baseado no vencedor
+            let mensagem = '';
+            let estilo = '';
+            
+            switch(vencedor) {
+                case 'player':
+                    mensagem = 'Você venceu!';
+                    estilo = 'alert-success';
+                    break;
+                case 'dealer':
+                    mensagem = 'Dealer venceu!';
+                    estilo = 'alert-danger';
+                    break;
+                case 'empate':
+                    mensagem = 'Empate!';
+                    estilo = 'alert-warning';
+                    break;
+            }
+            
+            gameMessage.textContent = mensagem;
+            gameMessage.className = `alert ${estilo} text-center w-100`;
+        }
+        
+        // Função para iniciar um novo jogo
+        async function novoJogo() {
+            try {
+                // Finalizar o jogo atual e retornar todas as cartas ao baralho
+                const response = await fetch(`/BlackjackWeb/FinalizarJogo?baralhoId=${baralhoId}`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao finalizar jogo');
+                }
+                
+                // Resetar o estado do jogo
+                limparCartas();
                 dealerScore.textContent = '0';
                 playerScore.textContent = '0';
                 
-                // Reseta os botões
+                gameMessage.textContent = 'Clique em "Iniciar" para começar um novo jogo!';
+                gameMessage.className = 'alert alert-info text-center w-100';
+                
                 startBtn.disabled = false;
                 hitBtn.disabled = true;
                 standBtn.disabled = true;
                 newGameBtn.disabled = true;
                 
-                // Reseta a mensagem
-                messageArea.className = 'alert alert-info mb-4';
-                messageArea.textContent = 'Clique em "Iniciar" para começar uma nova rodada!';
+                jogadoresInfo = [];
+                dealerInfo = null;
+                jogadorInfo = null;
+                jogoEmAndamento = false;
                 
-                // Limpa variáveis
-                jogadorId = 0;
+                // Resetar o contador de cartas
+                atualizarCartasRestantes(52);
+                
+            } catch (error) {
+                console.error('Erro ao iniciar novo jogo:', error);
+                gameMessage.textContent = 'Erro ao iniciar novo jogo. Tente novamente.';
+                gameMessage.className = 'alert alert-danger text-center w-100';
             }
-            
-            function calcularPontos(cartas) {
-                let pontos = 0;
-                let ases = 0;
-
-                cartas.forEach(carta => {
-                    if (carta.valor === 'A') {
-                        ases++;
-                        pontos += 11;
-                    } else if (['J', 'Q', 'K'].includes(carta.valor)) {
-                        pontos += 10;
-                    } else {
-                        pontos += parseInt(carta.valor);
-                    }
-                });
-
-                while (pontos > 21 && ases > 0) {
-                    pontos -= 10;
-                    ases--;
-                }
-
-                return pontos;
-            }
-            
-            // Event listeners
-            startBtn.addEventListener('click', iniciarRodada);
-            hitBtn.addEventListener('click', comprarCarta);
-            standBtn.addEventListener('click', parar);
-            newGameBtn.addEventListener('click', prepareNewGame);
-        });
+        }
     </script>
-
-    <style>
-        .jogo-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .titulo-jogo {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        
-        .info-baralho {
-            margin-bottom: 30px;
-        }
-        
-        .jogadores-contador {
-            background-color: #f1f9ff;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .jogadores-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .jogadores-info p {
-            margin-bottom: 8px;
-            font-size: 1.1em;
-        }
-        
-        .cartas-jogador {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            min-height: 150px;
-            padding: 20px 0;
-        }
-        
-        /* Estilo específico para o blackjack */
-        #dealer-area, #player-area {
-            padding: 15px;
-        }
-        
-        #control-buttons {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-    </style>
 } 

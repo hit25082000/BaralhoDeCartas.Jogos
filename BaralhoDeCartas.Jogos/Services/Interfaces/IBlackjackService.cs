@@ -5,12 +5,13 @@ namespace BaralhoDeCartas.Services.Interfaces
 {
     public interface IBlackjackService
     {
+        Task<IJogoBlackJack> CriarJogoBlackJackAsync(int numeroJogadores);
         Task<IBaralho> CriarNovoBaralhoAsync();
         Task<List<IJogadorDeBlackjack>> IniciarRodadaAsync(string baralhoId, int numeroJogadores);
         Task<ICarta> ComprarCartaAsync(string baralhoId, IJogadorDeBlackjack jogador);
-        Task<IBaralho> RetornarCartasAoBaralhoAsync(string baralhoId);
         List<IJogadorDeBlackjack> DeterminarVencedoresAsync(List<IJogadorDeBlackjack> jogadores);
-        Task<IJogoBlackJack> CriarJogoBlackJackAsync(int numeroJogadores);
-        Task<IJogadorDeBlackjack> PararJogador(IJogadorDeBlackjack jogadorDeBlackjack);
+        Task<IBaralho> RetornarCartasAoBaralhoAsync(string baralhoId);
+        Task<IJogadorDeBlackjack> PararJogador(IJogadorDeBlackjack jogadorDeBlackJack);
+        Task<IJogadorDeBlackjack> JogarDealer(string baralhoId, List<IJogadorDeBlackjack> jogadores);
     }
 } 
