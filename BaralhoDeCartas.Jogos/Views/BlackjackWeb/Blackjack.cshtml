@@ -128,7 +128,7 @@
             // Variável para armazenar o ID do baralho atual
             let baralhoId = '@Model.Baralho.BaralhoId';
             // Jogador atual
-            let jogadorId = '';
+            let jogadorId = 0;
 
             async function iniciarRodada() {
                 // Evitar múltiplos cliques simultâneos
@@ -292,7 +292,7 @@
                     playerScore.textContent = jogador.pontos;
                     
                     // Verifica se estourou
-                    if (jogador.pontos > 21) {
+                    if (jogador.estourou || jogador.pontos > 21) {
                         messageArea.className = 'alert alert-danger mb-4';
                         messageArea.textContent = 'Você estourou! Dealer vence.';
                         finalizarJogo();
@@ -332,9 +332,19 @@
                 standBtn.disabled = true;
                 
                 try {
+                    // Primeiro marca que o jogador parou
+                    const paraResponse = await fetch(`/BlackjackWeb/Parar?baralhoId=${baralhoId}&jogadorId=${jogadorId}`, {
+                        method: 'GET'
+                    });
+                    
+                    if (!paraResponse.ok) {
+                        throw new Error('Erro ao parar jogada');
+                    }
+                    
                     messageArea.className = 'alert alert-info mb-4';
                     messageArea.textContent = 'Vez do dealer...';
                     
+                    // Depois é a vez do dealer jogar
                     const response = await fetch(`/BlackjackWeb/DealerJogar?baralhoId=${baralhoId}`, {
                         method: 'GET'
                     });
@@ -437,7 +447,7 @@
                 messageArea.textContent = 'Clique em "Iniciar" para começar uma nova rodada!';
                 
                 // Limpa variáveis
-                jogadorId = '';
+                jogadorId = 0;
             }
             
             function calcularPontos(cartas) {
