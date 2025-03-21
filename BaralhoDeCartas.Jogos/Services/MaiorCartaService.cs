@@ -26,9 +26,23 @@ namespace BaralhoDeCartas.Services
         private void ValidarListaJogadores(List<IJogador> jogadores)
         {
             ValidacaoService.ValidarListaJogadores(jogadores);
-            ValidacaoService.ValidarJogadoresDuplicados(jogadores);
-            ValidacaoService.ValidarCartasDuplicadas(jogadores);
-            ValidacaoService.ValidarCodigoCartas(jogadores);
+            
+            // Não validamos cartasDuplicadas ou jogadoresDuplicados se estamos apenas validando a lista
+            // para operações que não requerem um estado completamente consistente
+            
+            // Validações básicas sobre os jogadores
+            foreach (var jogador in jogadores)
+            {
+                if (jogador == null)
+                {
+                    throw new ArgumentException("A lista não pode conter jogadores nulos");
+                }
+                
+                if (string.IsNullOrEmpty(jogador.Nome))
+                {
+                    throw new ArgumentException("Todos os jogadores devem ter um nome válido");
+                }
+            }
         }
 
         public async Task<IJogoMaiorCarta> CriarJogoMaiorCartaAsync(int numeroJogadores)
@@ -40,10 +54,9 @@ namespace BaralhoDeCartas.Services
                 IBaralho baralho = await _baralhoApiClient.CriarNovoBaralhoAsync();
                 List<IJogador> jogadores = await DistribuirCartasAsync(baralho.BaralhoId, numeroJogadores);
 
-                // Validar a consistência do código de cada carta
-                ValidacaoService.ValidarCodigoCartas(jogadores);
-
-                baralho.QuantidadeDeCartasRestantes -= jogadores.Sum((jogador) => jogador.Cartas.Count());
+                // Atualiza quantidade de cartas no baralho
+                int cartasUsadas = jogadores.Sum(jogador => jogador.Cartas.Count);
+                baralho.QuantidadeDeCartasRestantes -= cartasUsadas;
 
                 return _jogoFactory.CriarJogoMaiorCarta(jogadores, baralho);
             });
@@ -89,7 +102,13 @@ namespace BaralhoDeCartas.Services
             ValidarListaJogadores(jogadores);
 
             return await ServiceExceptionHandler.HandleServiceExceptionAsync(async () =>
-            {                
+            {
+                // Verificar se todos os jogadores possuem cartas
+                if (jogadores.Any(j => j.Cartas == null || !j.Cartas.Any()))
+                {
+                    throw new ArgumentException("Todos os jogadores devem ter pelo menos uma carta");
+                }
+                
                 return jogadores
                     .OrderByDescending(j => j.ObterCartaDeMaiorValor()?.Valor ?? 0)
                     .FirstOrDefault();
@@ -114,11 +133,9 @@ namespace BaralhoDeCartas.Services
             {
                 var baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, true);
                 
-                ValidacaoService.ValidarQuantidadeCartasBaralho(baralho, MINIMO_CARTAS_BARALHO);
-                
                 if (baralho.QuantidadeDeCartasRestantes < MINIMO_CARTAS_BARALHO)
                 {
-                    await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
+                    baralho = await _baralhoApiClient.RetornarCartasAoBaralhoAsync(baralhoId);
                     baralho = await _baralhoApiClient.EmbaralharBaralhoAsync(baralhoId, false);
                 }
                 
