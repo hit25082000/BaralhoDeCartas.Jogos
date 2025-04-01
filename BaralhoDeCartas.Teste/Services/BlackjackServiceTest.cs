@@ -75,7 +75,6 @@ namespace BaralhoDeCartas.Test.Services
         [Fact]
         public async Task ComprarCarta_QuandoServicoExternoIndisponivel_LancaExcecao()
         {
-            // Arrange
             string baralhoId = "abc123";
             var jogadorMock = new Mock<IJogadorDeBlackjack>();
             jogadorMock.Setup(j => j.Parou).Returns(false);
@@ -84,7 +83,6 @@ namespace BaralhoDeCartas.Test.Services
             _mockBaralhoApiClient.Setup(c => c.ComprarCartasAsync(baralhoId, 1))
                 .ThrowsAsync(new ExternalServiceUnavailableException("Serviço indisponível"));
 
-            // Act & Assert
             await Assert.ThrowsAsync<ExternalServiceUnavailableException>(() => 
                 _service.ComprarCartaAsync(baralhoId, jogadorMock.Object));
         }
@@ -92,7 +90,6 @@ namespace BaralhoDeCartas.Test.Services
         [Fact]
         public async Task RetornarCartasAoBaralho_QuandoBaralhoNaoEncontrado_LancaExcecao()
         {
-            // Arrange
             string baralhoId = "abc123";
             _mockBaralhoApiClient.Setup(c => c.RetornarCartasAoBaralhoAsync(baralhoId))
                 .ThrowsAsync(new BaralhoNotFoundException("Baralho não encontrado"));
